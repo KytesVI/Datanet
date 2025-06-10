@@ -77,7 +77,7 @@
       <div id="side-content"></div>
     </div>
     <script>
-      let fsData = JSON.parse(localStorage.getItem('fsData') || '{"name":"root","type":"dir","children":[]}');
+      let fsData = { name: 'root', type: 'dir', children: [] };
       let currentDir = fsData;
       const dirStack = [];
       const resultsDiv = document.getElementById('results');
@@ -146,28 +146,26 @@
 
 
       function saveData() {
-        localStorage.setItem('fsData', JSON.stringify(fsData));
+        fetch('/api/data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fsData)
+        });
       }
 
       const searchInput = document.getElementById('search');
 
-      if (fsData.children.length === 0) {
-        fetch('database.json')
-          .then(res => res.json())
-          .then(json => {
-            const entries = json.entries || [];
-            fsData.children = entries.map(item => ({ ...item, type: 'file' }));
-            saveData();
-            renderFileList();
-            refreshResults();
-          })
-          .catch(() => {
-            resultsDiv.innerHTML = '<p>Error loading database.</p>';
-          });
-      } else {
-        renderFileList();
-        refreshResults();
-      }
+      fetch('/api/data')
+        .then(res => res.json())
+        .then(json => {
+          fsData = json || { name: 'root', type: 'dir', children: [] };
+          currentDir = fsData;
+          renderFileList();
+          refreshResults();
+        })
+        .catch(() => {
+          resultsDiv.innerHTML = '<p>Error loading database.</p>';
+        });
 
       let currentSearchResults = [];
 
