@@ -10,6 +10,8 @@
         font-family: monospace;
         padding: 20px;
         margin-right: 70%;
+        width: 30%;
+        box-sizing: border-box;
       }
       input {
         background: #000;
@@ -74,16 +76,19 @@
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
 
-      function typeText(el, text, speed, cb) {
+      function typeText(el, text, duration, cb) {
         el.textContent = '';
         let i = 0;
+        const interval = text.length > 0 ? duration / text.length : duration;
         (function type() {
           if (i <= text.length) {
             el.textContent = text.slice(0, i);
             i++;
-            setTimeout(type, speed);
-          } else if (cb) {
-            cb();
+            if (i <= text.length) {
+              setTimeout(type, interval);
+            } else if (cb) {
+              cb();
+            }
           }
         })();
       }
@@ -257,7 +262,7 @@
           const temp = document.createElement('div');
           temp.innerHTML = parseMarkdown(item.description || '');
           const plain = temp.textContent || '';
-          typeText(descEl, plain, 15, () => {
+          typeText(descEl, plain, 2000, () => {
             descEl.innerHTML = parseMarkdown(item.description || '');
           });
         } else if (e.target.classList.contains('name') && item.type === 'dir') {
