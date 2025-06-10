@@ -25,6 +25,22 @@
       #file-list li .name { flex: 1; cursor: pointer; }
       #file-list li .actions { margin-left: 10px; }
       #file-list li .actions span { cursor: pointer; margin-left: 5px; }
+      #side-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 100%;
+        background: #111;
+        color: #0f0;
+        border-left: 1px solid #0f0;
+        padding: 10px;
+        display: none;
+        overflow-y: auto;
+      }
+      #side-panel h3 {
+        margin-top: 0;
+      }
     </style>
   </head>
   <body>
@@ -38,12 +54,23 @@
       <button id="new-folder">New Folder</button>
     </div>
     <ul id="file-list"></ul>
+    <div id="side-panel">
+      <button id="close-panel">Close</button>
+      <div id="side-content"></div>
+    </div>
     <script>
       let fsData = JSON.parse(localStorage.getItem('fsData') || '{"name":"root","type":"dir","children":[]}');
       const resultsDiv = document.getElementById('results');
       const fileList = document.getElementById('file-list');
       const newFileBtn = document.getElementById('new-file');
       const newFolderBtn = document.getElementById('new-folder');
+      const sidePanel = document.getElementById('side-panel');
+      const sideContent = document.getElementById('side-content');
+      const closePanelBtn = document.getElementById('close-panel');
+
+      closePanelBtn.addEventListener('click', () => {
+        sidePanel.style.display = 'none';
+      });
 
       function saveData() {
         localStorage.setItem('fsData', JSON.stringify(fsData));
@@ -160,7 +187,8 @@
             refreshResults();
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
-          alert(`Description: ${item.description || ''}`);
+          sideContent.innerHTML = `<h3>${item.name}</h3><p>${item.description || ''}</p>`;
+          sidePanel.style.display = 'block';
         }
       });
     </script>
