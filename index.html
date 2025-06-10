@@ -43,7 +43,7 @@
         overflow-y: auto;
       }
       #side-content {
-        white-space: pre-wrap;
+        white-space: normal;
       }
       #side-panel h3 {
         margin-top: 0;
@@ -275,7 +275,9 @@
           const temp = document.createElement('div');
           temp.innerHTML = parseMarkdown(item.description || '');
           const plain = temp.textContent || '';
+          descEl.style.whiteSpace = 'pre-wrap';
           typeText(descEl, plain, 2000, () => {
+            descEl.style.whiteSpace = 'normal';
             descEl.innerHTML = parseMarkdown(item.description || '');
           });
         } else if (e.target.classList.contains('name') && item.type === 'dir') {
