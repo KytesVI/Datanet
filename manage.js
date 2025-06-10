@@ -5,7 +5,7 @@ const DB_FILE = path.join(__dirname, 'database.json');
 
 function loadDB() {
   if (!fs.existsSync(DB_FILE)) {
-    return { entries: [] };
+    return { name: 'root', type: 'dir', children: [] };
   }
   return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
 }
@@ -35,7 +35,7 @@ switch (cmd) {
       process.exit(1);
     }
     const db = loadDB();
-    db.entries.push({ name, description });
+    db.children.push({ name, description, type: 'file' });
     saveDB(db);
     console.log('Entry added.');
     break;
@@ -49,11 +49,11 @@ switch (cmd) {
       process.exit(1);
     }
     const db = loadDB();
-    if (!db.entries[index]) {
+    if (!db.children[index]) {
       console.error('Invalid index');
       process.exit(1);
     }
-    db.entries[index] = { name, description };
+    db.children[index] = { name, description, type: 'file' };
     saveDB(db);
     console.log('Entry updated.');
     break;
@@ -65,11 +65,11 @@ switch (cmd) {
       process.exit(1);
     }
     const db = loadDB();
-    if (!db.entries[index]) {
+    if (!db.children[index]) {
       console.error('Invalid index');
       process.exit(1);
     }
-    db.entries.splice(index, 1);
+    db.children.splice(index, 1);
     saveDB(db);
     console.log('Entry removed.');
     break;

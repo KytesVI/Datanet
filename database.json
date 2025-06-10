@@ -1,16 +1,21 @@
 {
-  "entries": [
+  "name": "root",
+  "type": "dir",
+  "children": [
     {
       "name": "Alpha Centauri",
-      "description": "Nearest star system to Sol."
+      "description": "Nearest star system to Sol.",
+      "type": "file"
     },
     {
       "name": "Galactic Archives",
-      "description": "Central repository of historical records."
+      "description": "Central repository of historical records.",
+      "type": "file"
     },
     {
       "name": "Exoplanet Survey",
-      "description": "Catalog of habitable worlds discovered to date."
+      "description": "Catalog of habitable worlds discovered to date.",
+      "type": "file"
     }
   ]
 }
