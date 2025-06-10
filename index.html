@@ -130,6 +130,20 @@
         return html;
       }
 
+      function openFile(item) {
+        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
+        sidePanel.scrollTop = 0;
+        const descEl = document.getElementById('desc');
+        const temp = document.createElement('div');
+        temp.innerHTML = parseMarkdown(item.description || '');
+        const plain = temp.textContent || '';
+        descEl.style.whiteSpace = 'pre-wrap';
+        typeText(descEl, plain, 2000, () => {
+          descEl.style.whiteSpace = 'normal';
+          descEl.innerHTML = parseMarkdown(item.description || '');
+        });
+      }
+
 
       function saveData() {
         localStorage.setItem('fsData', JSON.stringify(fsData));
@@ -155,14 +169,17 @@
         refreshResults();
       }
 
+      let currentSearchResults = [];
+
       function renderResults(results) {
+        currentSearchResults = results;
         if (results.length === 0) {
-          resultsDiv.innerHTML = '<p>No matching records.</p>';
+          resultsDiv.innerHTML = '<p>No matching files.</p>';
           return;
         }
         const list = results
-          .map(item =>
-            `<li><strong>${item.name}</strong>: <span class="desc">${parseMarkdown(item.description || '')}</span></li>`
+          .map((res, idx) =>
+            `<li data-index="${idx}">${res.path.join('/')}</li>`
           )
           .join('');
         resultsDiv.innerHTML = `<ul>${list}</ul>`;
@@ -172,13 +189,23 @@
         refreshResults();
       });
 
-      function getAllFiles(dir) {
+      resultsDiv.addEventListener('click', e => {
+        const idx = e.target.dataset.index;
+        if (idx === undefined) return;
+        const result = currentSearchResults[idx];
+        if (result) {
+          openFile(result.item);
+        }
+      });
+
+      function getAllFiles(dir, path = []) {
         let files = [];
         for (const child of dir.children || []) {
+          const newPath = path.concat(child.name);
           if (child.type === 'file') {
-            files.push(child);
+            files.push({ item: child, path: newPath });
           } else if (child.type === 'dir') {
-            files = files.concat(getAllFiles(child));
+            files = files.concat(getAllFiles(child, newPath));
           }
         }
         return files;
@@ -190,9 +217,8 @@
           resultsDiv.innerHTML = '';
           return;
         }
-        const filtered = getAllFiles(fsData).filter(item =>
-          (item.description || '').toLowerCase().includes(query) ||
-          item.name.toLowerCase().includes(query)
+        const filtered = getAllFiles(fsData).filter(
+          f => f.item.name.toLowerCase().includes(query)
         );
         renderResults(filtered);
       }
@@ -269,17 +295,7 @@
             refreshResults();
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
-          sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
-          sidePanel.scrollTop = 0;
-          const descEl = document.getElementById('desc');
-          const temp = document.createElement('div');
-          temp.innerHTML = parseMarkdown(item.description || '');
-          const plain = temp.textContent || '';
-          descEl.style.whiteSpace = 'pre-wrap';
-          typeText(descEl, plain, 2000, () => {
-            descEl.style.whiteSpace = 'normal';
-            descEl.innerHTML = parseMarkdown(item.description || '');
-          });
+          openFile(item);
         } else if (e.target.classList.contains('name') && item.type === 'dir') {
           dirStack.push(currentDir);
           currentDir = item;
