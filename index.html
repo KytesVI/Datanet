@@ -32,8 +32,6 @@
       #file-list li { display: flex; align-items: center; padding: 4px 0; }
       #file-list li .icon { width: 20px; }
       #file-list li .name { flex: 1; cursor: pointer; }
-      #file-list li .actions { margin-left: 10px; }
-      #file-list li .actions span { cursor: pointer; margin-left: 5px; }
       #side-panel {
         flex: 1;
         background: #111;
@@ -67,8 +65,6 @@
 
       <h2>File Manager</h2>
       <div id="toolbar">
-        <button id="new-file">New File</button>
-        <button id="new-folder">New Folder</button>
         <button id="up-folder" style="display:none;">Up</button>
       </div>
       <ul id="file-list"></ul>
@@ -82,8 +78,6 @@
       const dirStack = [];
       const resultsDiv = document.getElementById('results');
       const fileList = document.getElementById('file-list');
-      const newFileBtn = document.getElementById('new-file');
-      const newFolderBtn = document.getElementById('new-folder');
       const upFolderBtn = document.getElementById('up-folder');
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
@@ -145,17 +139,9 @@
       }
 
 
-      function saveData() {
-        fetch('/api/data', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(fsData)
-        });
-      }
-
       const searchInput = document.getElementById('search');
 
-      fetch('/api/data')
+      fetch('database.json')
         .then(res => res.json())
         .then(json => {
           fsData = json || { name: 'root', type: 'dir', children: [] };
@@ -229,36 +215,14 @@
           return;
         }
         fileList.innerHTML = children
-          .map((item, index) =>
-            `<li><span class="icon">${item.type === 'dir' ? '📁' : '📄'}</span>` +
-            `<span class="name" data-index="${index}">${item.name}</span>` +
-            `<span class="actions">` +
-            `<span class="rename" data-index="${index}">✏️</span> ` +
-            `${item.type === 'file' ? `<span class="edit" data-index="${index}">📝</span> ` : ''}` +
-            `<span class="delete" data-index="${index}">🗑️</span>` +
-            `</span></li>`
+          .map(
+            (item, index) =>
+              `<li><span class="icon">${item.type === 'dir' ? '📁' : '📄'}</span>` +
+              `<span class="name" data-index="${index}">${item.name}</span></li>`
           )
           .join('');
       }
 
-      newFileBtn.addEventListener('click', () => {
-        const name = prompt('File name:');
-        if (!name) return;
-        const description = prompt('Description:') || '';
-        currentDir.children.push({ name, description, type: 'file' });
-        saveData();
-        renderFileList();
-        refreshResults();
-      });
-
-      newFolderBtn.addEventListener('click', () => {
-        const name = prompt('Folder name:');
-        if (!name) return;
-        currentDir.children.push({ name, type: 'dir', children: [] });
-        saveData();
-        renderFileList();
-        refreshResults();
-      });
 
       upFolderBtn.addEventListener('click', () => {
         if (dirStack.length === 0) return;
@@ -267,40 +231,19 @@
         refreshResults();
       });
 
-      fileList.addEventListener('click', e => {
-        const index = e.target.dataset.index;
-        if (index === undefined) return;
-        const item = currentDir.children[index];
-        if (e.target.classList.contains('delete')) {
-          currentDir.children.splice(index, 1);
-          saveData();
-          renderFileList();
-          refreshResults();
-        } else if (e.target.classList.contains('rename')) {
-          const newName = prompt('Name:', item.name);
-          if (newName) {
-            item.name = newName;
-            saveData();
+        fileList.addEventListener('click', e => {
+          const index = e.target.dataset.index;
+          if (index === undefined) return;
+          const item = currentDir.children[index];
+          if (e.target.classList.contains('name') && item.type === 'file') {
+            openFile(item);
+          } else if (e.target.classList.contains('name') && item.type === 'dir') {
+            dirStack.push(currentDir);
+            currentDir = item;
             renderFileList();
             refreshResults();
           }
-        } else if (e.target.classList.contains('edit') && item.type === 'file') {
-          const desc = prompt('Description:', item.description || '');
-          if (desc !== null) {
-            item.description = desc;
-            saveData();
-            renderFileList();
-            refreshResults();
-          }
-        } else if (e.target.classList.contains('name') && item.type === 'file') {
-          openFile(item);
-        } else if (e.target.classList.contains('name') && item.type === 'dir') {
-          dirStack.push(currentDir);
-          currentDir = item;
-          renderFileList();
-          refreshResults();
-        }
-      });
+        });
     </script>
   </body>
 </html>
