@@ -72,6 +72,31 @@
       const sideContent = document.getElementById('side-content');
       const closePanelBtn = document.getElementById('close-panel');
 
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function parseMarkdown(text) {
+        let html = escapeHtml(text || '');
+        html = html
+          .replace(/^###### (.*)$/gm, '<h6>$1</h6>')
+          .replace(/^##### (.*)$/gm, '<h5>$1</h5>')
+          .replace(/^#### (.*)$/gm, '<h4>$1</h4>')
+          .replace(/^### (.*)$/gm, '<h3>$1</h3>')
+          .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+          .replace(/^# (.*)$/gm, '<h1>$1</h1>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/_(.+?)_/g, '<em>$1</em>')
+          .replace(/\[([^\[]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+          .replace(/\n/g, '<br>');
+        return html;
+      }
+
       closePanelBtn.addEventListener('click', () => {
         sidePanel.style.display = 'none';
       });
@@ -106,7 +131,9 @@
           return;
         }
         const list = results
-          .map(item => `<li><strong>${item.name}</strong>: ${item.description || ''}</li>`)
+          .map(item =>
+            `<li><strong>${item.name}</strong>: <span class="desc">${parseMarkdown(item.description || '')}</span></li>`
+          )
           .join('');
         resultsDiv.innerHTML = `<ul>${list}</ul>`;
       }
@@ -212,7 +239,7 @@
             refreshResults();
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
-          sideContent.innerHTML = `<h3>${item.name}</h3><p>${item.description || ''}</p>`;
+          sideContent.innerHTML = `<h3>${item.name}</h3><div>${parseMarkdown(item.description || '')}</div>`;
           sidePanel.style.display = 'block';
         } else if (e.target.classList.contains('name') && item.type === 'dir') {
           dirStack.push(currentDir);
