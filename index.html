@@ -3,9 +3,66 @@
   <head>
     <meta charset="UTF-8">
     <title>Datanet Interface</title>
+    <style>
+      body {
+        background: #000;
+        color: #0f0;
+        font-family: monospace;
+        padding: 20px;
+      }
+      input {
+        background: #000;
+        color: #0f0;
+        border: 1px solid #0f0;
+        padding: 5px;
+        width: 100%;
+      }
+      #results { margin-top: 20px; }
+    </style>
   </head>
   <body>
     <h1>Welcome to the Datanet In-World Database</h1>
-    <p>This is a placeholder.</p>
+    <input type="text" id="search" placeholder="Search the archives..." />
+    <div id="results"></div>
+    <script>
+      const data = [
+        { name: 'Alpha Centauri', description: 'Nearest star system to Sol.' },
+        {
+          name: 'Galactic Archives',
+          description: 'Central repository of historical records.'
+        },
+        {
+          name: 'Exoplanet Survey',
+          description: 'Catalog of habitable worlds discovered to date.'
+        }
+      ];
+
+      const searchInput = document.getElementById('search');
+      const resultsDiv = document.getElementById('results');
+
+      function renderResults(results) {
+        if (results.length === 0) {
+          resultsDiv.innerHTML = '<p>No matching records.</p>';
+          return;
+        }
+        const list = results
+          .map(item => `<li><strong>${item.name}</strong>: ${item.description}</li>`)
+          .join('');
+        resultsDiv.innerHTML = `<ul>${list}</ul>`;
+      }
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase().trim();
+        if (query === '') {
+          resultsDiv.innerHTML = '';
+          return;
+        }
+        const filtered = data.filter(item =>
+          item.name.toLowerCase().includes(query) ||
+          item.description.toLowerCase().includes(query)
+        );
+        renderResults(filtered);
+      });
+    </script>
   </body>
 </html>
