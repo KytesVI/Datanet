@@ -25,20 +25,18 @@
     <input type="text" id="search" placeholder="Search the archives..." />
     <div id="results"></div>
     <script>
-      const data = [
-        { name: 'Alpha Centauri', description: 'Nearest star system to Sol.' },
-        {
-          name: 'Galactic Archives',
-          description: 'Central repository of historical records.'
-        },
-        {
-          name: 'Exoplanet Survey',
-          description: 'Catalog of habitable worlds discovered to date.'
-        }
-      ];
+      let data = [];
+      const resultsDiv = document.getElementById('results');
+      fetch('database.json')
+        .then(res => res.json())
+        .then(json => {
+          data = json.entries || [];
+        })
+        .catch(err => {
+          resultsDiv.innerHTML = '<p>Error loading database.</p>';
+        });
 
       const searchInput = document.getElementById('search');
-      const resultsDiv = document.getElementById('results');
 
       function renderResults(results) {
         if (results.length === 0) {

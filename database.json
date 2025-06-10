@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "name": "Alpha Centauri",
+      "description": "Nearest star system to Sol."
+    },
+    {
+      "name": "Galactic Archives",
+      "description": "Central repository of historical records."
+    },
+    {
+      "name": "Exoplanet Survey",
+      "description": "Catalog of habitable worlds discovered to date."
+    }
+  ]
+}
