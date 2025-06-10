@@ -52,6 +52,7 @@
     <div id="toolbar">
       <button id="new-file">New File</button>
       <button id="new-folder">New Folder</button>
+      <button id="up-folder" style="display:none;">Up</button>
     </div>
     <ul id="file-list"></ul>
     <div id="side-panel">
@@ -60,10 +61,13 @@
     </div>
     <script>
       let fsData = JSON.parse(localStorage.getItem('fsData') || '{"name":"root","type":"dir","children":[]}');
+      let currentDir = fsData;
+      const dirStack = [];
       const resultsDiv = document.getElementById('results');
       const fileList = document.getElementById('file-list');
       const newFileBtn = document.getElementById('new-file');
       const newFolderBtn = document.getElementById('new-folder');
+      const upFolderBtn = document.getElementById('up-folder');
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
       const closePanelBtn = document.getElementById('close-panel');
@@ -111,13 +115,25 @@
         refreshResults();
       });
 
+      function getAllFiles(dir) {
+        let files = [];
+        for (const child of dir.children || []) {
+          if (child.type === 'file') {
+            files.push(child);
+          } else if (child.type === 'dir') {
+            files = files.concat(getAllFiles(child));
+          }
+        }
+        return files;
+      }
+
       function refreshResults() {
         const query = searchInput.value.toLowerCase().trim();
         if (query === '') {
           resultsDiv.innerHTML = '';
           return;
         }
-        const filtered = fsData.children.filter(item =>
+        const filtered = getAllFiles(fsData).filter(item =>
           (item.description || '').toLowerCase().includes(query) ||
           item.name.toLowerCase().includes(query)
         );
@@ -125,11 +141,13 @@
       }
 
       function renderFileList() {
-        if (fsData.children.length === 0) {
+        upFolderBtn.style.display = dirStack.length > 0 ? 'inline' : 'none';
+        const children = currentDir.children || [];
+        if (children.length === 0) {
           fileList.innerHTML = '<li>No items.</li>';
           return;
         }
-        fileList.innerHTML = fsData.children
+        fileList.innerHTML = children
           .map((item, index) =>
             `<li><span class="icon">${item.type === 'dir' ? '📁' : '📄'}</span>` +
             `<span class="name" data-index="${index}">${item.name}</span>` +
@@ -146,7 +164,7 @@
         const name = prompt('File name:');
         if (!name) return;
         const description = prompt('Description:') || '';
-        fsData.children.push({ name, description, type: 'file' });
+        currentDir.children.push({ name, description, type: 'file' });
         saveData();
         renderFileList();
         refreshResults();
@@ -155,8 +173,15 @@
       newFolderBtn.addEventListener('click', () => {
         const name = prompt('Folder name:');
         if (!name) return;
-        fsData.children.push({ name, type: 'dir', children: [] });
+        currentDir.children.push({ name, type: 'dir', children: [] });
         saveData();
+        renderFileList();
+        refreshResults();
+      });
+
+      upFolderBtn.addEventListener('click', () => {
+        if (dirStack.length === 0) return;
+        currentDir = dirStack.pop();
         renderFileList();
         refreshResults();
       });
@@ -164,9 +189,9 @@
       fileList.addEventListener('click', e => {
         const index = e.target.dataset.index;
         if (index === undefined) return;
-        const item = fsData.children[index];
+        const item = currentDir.children[index];
         if (e.target.classList.contains('delete')) {
-          fsData.children.splice(index, 1);
+          currentDir.children.splice(index, 1);
           saveData();
           renderFileList();
           refreshResults();
@@ -189,6 +214,11 @@
         } else if (e.target.classList.contains('name') && item.type === 'file') {
           sideContent.innerHTML = `<h3>${item.name}</h3><p>${item.description || ''}</p>`;
           sidePanel.style.display = 'block';
+        } else if (e.target.classList.contains('name') && item.type === 'dir') {
+          dirStack.push(currentDir);
+          currentDir = item;
+          renderFileList();
+          refreshResults();
         }
       });
     </script>
