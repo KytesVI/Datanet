@@ -47,6 +47,15 @@
       #side-panel h3 {
         margin-top: 0;
       }
+      #side-panel h1,
+      #side-panel h2,
+      #side-panel h3,
+      #side-panel h4,
+      #side-panel h5,
+      #side-panel h6,
+      #side-panel p {
+        margin: 0;
+      }
     </style>
   </head>
   <body>
@@ -258,6 +267,7 @@
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
           sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
+          sidePanel.scrollTop = 0;
           const descEl = document.getElementById('desc');
           const temp = document.createElement('div');
           temp.innerHTML = parseMarkdown(item.description || '');
