@@ -18,21 +18,41 @@
         width: 100%;
       }
       #results { margin-top: 20px; }
+      #toolbar { margin-top: 20px; }
+      #file-list { list-style: none; padding-left: 0; margin-top: 10px; }
+      #file-list li { display: flex; align-items: center; padding: 4px 0; }
+      #file-list li .icon { width: 20px; }
+      #file-list li .name { flex: 1; cursor: pointer; }
+      #file-list li .actions { margin-left: 10px; }
+      #file-list li .actions span { cursor: pointer; margin-left: 5px; }
     </style>
   </head>
   <body>
     <h1>Welcome to the Datanet In-World Database</h1>
     <input type="text" id="search" placeholder="Search the archives..." />
     <div id="results"></div>
+
+    <h2>File Manager</h2>
+    <div id="toolbar">
+      <button id="new-file">New File</button>
+      <button id="new-folder">New Folder</button>
+    </div>
+    <ul id="file-list"></ul>
     <script>
-      let data = [];
+      let fsData = { name: 'root', type: 'dir', children: [] };
       const resultsDiv = document.getElementById('results');
+      const fileList = document.getElementById('file-list');
+      const newFileBtn = document.getElementById('new-file');
+      const newFolderBtn = document.getElementById('new-folder');
+
       fetch('database.json')
         .then(res => res.json())
         .then(json => {
-          data = json.entries || [];
+          const entries = json.entries || [];
+          fsData.children = entries.map(item => ({ ...item, type: 'file' }));
+          renderFileList();
         })
-        .catch(err => {
+        .catch(() => {
           resultsDiv.innerHTML = '<p>Error loading database.</p>';
         });
 
@@ -44,7 +64,7 @@
           return;
         }
         const list = results
-          .map(item => `<li><strong>${item.name}</strong>: ${item.description}</li>`)
+          .map(item => `<li><strong>${item.name}</strong>: ${item.description || ''}</li>`)
           .join('');
         resultsDiv.innerHTML = `<ul>${list}</ul>`;
       }
@@ -55,11 +75,61 @@
           resultsDiv.innerHTML = '';
           return;
         }
-        const filtered = data.filter(item =>
-          item.name.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query)
+        const filtered = fsData.children.filter(item =>
+          (item.description || '').toLowerCase().includes(query) ||
+          item.name.toLowerCase().includes(query)
         );
         renderResults(filtered);
+      });
+
+      function renderFileList() {
+        if (fsData.children.length === 0) {
+          fileList.innerHTML = '<li>No items.</li>';
+          return;
+        }
+        fileList.innerHTML = fsData.children
+          .map((item, index) =>
+            `<li><span class="icon">${item.type === 'dir' ? '📁' : '📄'}</span>` +
+            `<span class="name" data-index="${index}">${item.name}</span>` +
+            `<span class="actions">` +
+            `<span class="rename" data-index="${index}">✏️</span> ` +
+            `<span class="delete" data-index="${index}">🗑️</span>` +
+            `</span></li>`
+          )
+          .join('');
+      }
+
+      newFileBtn.addEventListener('click', () => {
+        const name = prompt('File name:');
+        if (!name) return;
+        const description = prompt('Description:') || '';
+        fsData.children.push({ name, description, type: 'file' });
+        renderFileList();
+      });
+
+      newFolderBtn.addEventListener('click', () => {
+        const name = prompt('Folder name:');
+        if (!name) return;
+        fsData.children.push({ name, type: 'dir', children: [] });
+        renderFileList();
+      });
+
+      fileList.addEventListener('click', e => {
+        const index = e.target.dataset.index;
+        if (index === undefined) return;
+        const item = fsData.children[index];
+        if (e.target.classList.contains('delete')) {
+          fsData.children.splice(index, 1);
+          renderFileList();
+        } else if (e.target.classList.contains('rename')) {
+          const newName = prompt('Name:', item.name);
+          if (newName) {
+            item.name = newName;
+            renderFileList();
+          }
+        } else if (e.target.classList.contains('name') && item.type === 'file') {
+          alert(`Description: ${item.description || ''}`);
+        }
       });
     </script>
   </body>
