@@ -8,10 +8,16 @@
         background: #000;
         color: #0f0;
         font-family: monospace;
-        padding: 20px;
-        margin-right: 70%;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+      }
+
+      #left-panel {
         width: 30%;
+        padding: 20px;
         box-sizing: border-box;
+        overflow-y: auto;
       }
       input {
         background: #000;
@@ -29,16 +35,11 @@
       #file-list li .actions { margin-left: 10px; }
       #file-list li .actions span { cursor: pointer; margin-left: 5px; }
       #side-panel {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 70%;
-        height: 100%;
+        flex: 1;
         background: #111;
         color: #0f0;
         border-left: 1px solid #0f0;
-        padding: 10px;
-        display: block;
+        padding: 20px;
         overflow-y: auto;
       }
       #side-content {
@@ -59,17 +60,19 @@
     </style>
   </head>
   <body>
-    <h1>Welcome to the Datanet In-World Database</h1>
-    <input type="text" id="search" placeholder="Search the archives..." />
-    <div id="results"></div>
+    <div id="left-panel">
+      <h1>Welcome to the Datanet In-World Database</h1>
+      <input type="text" id="search" placeholder="Search the archives..." />
+      <div id="results"></div>
 
-    <h2>File Manager</h2>
-    <div id="toolbar">
-      <button id="new-file">New File</button>
-      <button id="new-folder">New Folder</button>
-      <button id="up-folder" style="display:none;">Up</button>
+      <h2>File Manager</h2>
+      <div id="toolbar">
+        <button id="new-file">New File</button>
+        <button id="new-folder">New Folder</button>
+        <button id="up-folder" style="display:none;">Up</button>
+      </div>
+      <ul id="file-list"></ul>
     </div>
-    <ul id="file-list"></ul>
     <div id="side-panel">
       <div id="side-content"></div>
     </div>
