@@ -32,36 +32,15 @@
     <input type="text" id="search" placeholder="Search the archives..." />
     <div id="results"></div>
 
-<<<<<<< HEAD
-    <h2>Create Entry</h2>
-    <input type="text" id="new-name" placeholder="Name" />
-    <input type="text" id="new-description" placeholder="Description" />
-    <button id="add-btn">Add</button>
-
-    <h2>Entries</h2>
-    <ul id="entry-list"></ul>
-=======
     <h2>File Manager</h2>
     <div id="toolbar">
       <button id="new-file">New File</button>
       <button id="new-folder">New Folder</button>
     </div>
     <ul id="file-list"></ul>
->>>>>>> origin/k3xl2n-codex/add-ui-for-crud-operations
     <script>
       let fsData = { name: 'root', type: 'dir', children: [] };
       const resultsDiv = document.getElementById('results');
-<<<<<<< HEAD
-      const entryList = document.getElementById('entry-list');
-      const addBtn = document.getElementById('add-btn');
-      const newName = document.getElementById('new-name');
-      const newDescription = document.getElementById('new-description');
-      fetch('database.json')
-        .then(res => res.json())
-        .then(json => {
-          data = json.entries || [];
-          renderEntries();
-=======
       const fileList = document.getElementById('file-list');
       const newFileBtn = document.getElementById('new-file');
       const newFolderBtn = document.getElementById('new-folder');
@@ -72,7 +51,6 @@
           const entries = json.entries || [];
           fsData.children = entries.map(item => ({ ...item, type: 'file' }));
           renderFileList();
->>>>>>> origin/k3xl2n-codex/add-ui-for-crud-operations
         })
         .catch(() => {
           resultsDiv.innerHTML = '<p>Error loading database.</p>';
@@ -104,18 +82,6 @@
         renderResults(filtered);
       });
 
-<<<<<<< HEAD
-      function renderEntries() {
-        if (data.length === 0) {
-          entryList.innerHTML = '<li>No entries.</li>';
-          return;
-        }
-        entryList.innerHTML = data
-          .map((item, index) =>
-            `<li><strong>${item.name}</strong>: ${item.description} ` +
-            `<button class="edit" data-index="${index}">Edit</button> ` +
-            `<button class="del" data-index="${index}">Delete</button></li>`
-=======
       function renderFileList() {
         if (fsData.children.length === 0) {
           fileList.innerHTML = '<li>No items.</li>';
@@ -129,37 +95,10 @@
             `<span class="rename" data-index="${index}">✏️</span> ` +
             `<span class="delete" data-index="${index}">🗑️</span>` +
             `</span></li>`
->>>>>>> origin/k3xl2n-codex/add-ui-for-crud-operations
           )
           .join('');
       }
 
-<<<<<<< HEAD
-      addBtn.addEventListener('click', () => {
-        const name = newName.value.trim();
-        const description = newDescription.value.trim();
-        if (!name || !description) return;
-        data.push({ name, description });
-        newName.value = '';
-        newDescription.value = '';
-        renderEntries();
-      });
-
-      entryList.addEventListener('click', e => {
-        const index = e.target.dataset.index;
-        if (index === undefined) return;
-        if (e.target.classList.contains('del')) {
-          data.splice(index, 1);
-          renderEntries();
-        } else if (e.target.classList.contains('edit')) {
-          const item = data[index];
-          const name = prompt('Name:', item.name);
-          const description = prompt('Description:', item.description);
-          if (name && description) {
-            data[index] = { name, description };
-            renderEntries();
-          }
-=======
       newFileBtn.addEventListener('click', () => {
         const name = prompt('File name:');
         if (!name) return;
@@ -190,7 +129,6 @@
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
           alert(`Description: ${item.description || ''}`);
->>>>>>> origin/k3xl2n-codex/add-ui-for-crud-operations
         }
       });
     </script>
