@@ -3,8 +3,58 @@
   "type": "dir",
   "children": [
     {
-      "name": "Alpha Centauri",
-      "description": "Nearest star system to Sol.",
+      "name": "Macrolog Interstellar",
+      "description": "MACROLOG — PUBLIC CORPORATE REGISTRY (CR-8839A)
+Rev 13.04.105 AE | Ultima’s Rest DataNet Node
+
+# CORPORATE OVERVIEW
+  Industry......... Freight logistics, infrastructure, resource relocation
+  Founded.......... Post-Expansion Era (Date Classified)
+  HQ Location...... Margulis Station, orbiting Nova Fane IV
+  Alignment........ Lawful Neutral
+  Scope............ Intergalactic
+
+# DESCRIPTION
+  Macrolog is one of the galaxy’s largest logistics and infrastructure firms.
+  Known for freight architecture, orbital delivery systems, and sector-wide
+  transport lanes, it functions as the backbone of modern interstellar trade.
+
+  With operations from frontier mining outposts to megastructure assembly
+  platforms, Macrolog’s systems power planetary development, stabilize high-
+  traffic drift corridors, and support both civilian and military transport needs.
+
+  The company is minimally communicative with the public. It does not
+  advertise and offers no direct civilian contact channels. Nonetheless, its
+  systems are everywhere—from spaceport cargo lifts to automated fuel nodes.
+
+# COMMON INTERFACES
+  Most citizens interact with Macrolog indirectly:
+    - Freight handling via authorized ports
+    - Refueling stations using Macrolog standards
+    - Routing assistance for licensed haulers
+
+  Freelancers may access limited job postings or refit stations at tiered
+  terminals across key sectors, especially near the Aurora corridor.
+
+# PUBLIC SERVICES (TIER-0 ACCESS)
+  - Cargo processing at authorized hubs
+  - Interstellar routing (license required)
+  - Refueling & repair nodes (fees apply)
+  - Freelance contract boards (location-based)
+
+# STATUS
+  - Operational in all major sectors  
+  - High activity: North Sector (Aurora) & Central Sector
+
+# CONTACT
+  - No public line available  
+  - Use licensed brokerage terminals for inquiries
+
+# LEGAL NOTICE
+  - Tampering with Macrolog infrastructure is a Class-2 offense under
+  - intersector compliance law. Violators may face prosecution or blacklisting.
+
+File Authority: Macrolog Public Access Console – Node 12X",
       "type": "file"
     },
     {
