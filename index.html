@@ -86,13 +86,21 @@
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
 
-      function typeText(el, text, duration, cb) {
-        el.textContent = '';
+      function typeText(el, text, duration, isHTML, cb) {
+        if (isHTML) {
+          el.innerHTML = '';
+        } else {
+          el.textContent = '';
+        }
         let i = 0;
         const interval = text.length > 0 ? duration / text.length : duration;
         (function type() {
           if (i <= text.length) {
-            el.textContent = text.slice(0, i);
+            if (isHTML) {
+              el.innerHTML = text.slice(0, i);
+            } else {
+              el.textContent = text.slice(0, i);
+            }
             i++;
             if (i <= text.length) {
               setTimeout(type, interval);
@@ -132,14 +140,9 @@
         sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
         sidePanel.scrollTop = 0;
         const descEl = document.getElementById('desc');
-        const temp = document.createElement('div');
-        temp.innerHTML = parseMarkdown(item.description || '');
-        const plain = temp.textContent || '';
-        descEl.style.whiteSpace = 'pre-wrap';
-        typeText(descEl, plain, 2000, () => {
-          descEl.style.whiteSpace = 'normal';
-          descEl.innerHTML = parseMarkdown(item.description || '');
-        });
+        const html = parseMarkdown(item.description || '');
+        descEl.style.whiteSpace = 'normal';
+        typeText(descEl, html, 1000, true);
       }
 
 
