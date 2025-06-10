@@ -60,6 +60,7 @@
         margin: 0;
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
     <div id="left-panel">
@@ -76,9 +77,13 @@
     <div id="side-panel">
       <div id="side-content"></div>
     </div>
-    <script>
-      let fsData = { name: 'root', type: 'dir', children: [] };
-      let currentDir = fsData;
+      <script>
+        const SUPABASE_URL = window.SUPABASE_DATABASE_URL || '';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let fsData = { name: 'root', type: 'dir', children: [] };
+        let currentDir = fsData;
       const dirStack = [];
       const resultsDiv = document.getElementById('results');
       const fileList = document.getElementById('file-list');
@@ -146,19 +151,27 @@
       }
 
 
-      const searchInput = document.getElementById('search');
+        const searchInput = document.getElementById('search');
 
-      fetch('database.json')
-        .then(res => res.json())
-        .then(json => {
-          fsData = json || { name: 'root', type: 'dir', children: [] };
+        async function loadDatabase() {
+          try {
+            const { data, error } = await sb
+              .from('database')
+              .select('data')
+              .single();
+            if (error) throw error;
+            fsData = data.data || { name: 'root', type: 'dir', children: [] };
+          } catch (err) {
+            console.error('Error loading database from Supabase:', err);
+            const res = await fetch('database.json');
+            fsData = await res.json();
+          }
           currentDir = fsData;
           renderFileList();
           refreshResults();
-        })
-        .catch(() => {
-          resultsDiv.innerHTML = '<p>Error loading database.</p>';
-        });
+        }
+
+        loadDatabase();
 
       let currentSearchResults = [];
 
