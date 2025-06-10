@@ -24,13 +24,26 @@
     <h1>Welcome to the Datanet In-World Database</h1>
     <input type="text" id="search" placeholder="Search the archives..." />
     <div id="results"></div>
+
+    <h2>Create Entry</h2>
+    <input type="text" id="new-name" placeholder="Name" />
+    <input type="text" id="new-description" placeholder="Description" />
+    <button id="add-btn">Add</button>
+
+    <h2>Entries</h2>
+    <ul id="entry-list"></ul>
     <script>
       let data = [];
       const resultsDiv = document.getElementById('results');
+      const entryList = document.getElementById('entry-list');
+      const addBtn = document.getElementById('add-btn');
+      const newName = document.getElementById('new-name');
+      const newDescription = document.getElementById('new-description');
       fetch('database.json')
         .then(res => res.json())
         .then(json => {
           data = json.entries || [];
+          renderEntries();
         })
         .catch(err => {
           resultsDiv.innerHTML = '<p>Error loading database.</p>';
@@ -60,6 +73,47 @@
           item.description.toLowerCase().includes(query)
         );
         renderResults(filtered);
+      });
+
+      function renderEntries() {
+        if (data.length === 0) {
+          entryList.innerHTML = '<li>No entries.</li>';
+          return;
+        }
+        entryList.innerHTML = data
+          .map((item, index) =>
+            `<li><strong>${item.name}</strong>: ${item.description} ` +
+            `<button class="edit" data-index="${index}">Edit</button> ` +
+            `<button class="del" data-index="${index}">Delete</button></li>`
+          )
+          .join('');
+      }
+
+      addBtn.addEventListener('click', () => {
+        const name = newName.value.trim();
+        const description = newDescription.value.trim();
+        if (!name || !description) return;
+        data.push({ name, description });
+        newName.value = '';
+        newDescription.value = '';
+        renderEntries();
+      });
+
+      entryList.addEventListener('click', e => {
+        const index = e.target.dataset.index;
+        if (index === undefined) return;
+        if (e.target.classList.contains('del')) {
+          data.splice(index, 1);
+          renderEntries();
+        } else if (e.target.classList.contains('edit')) {
+          const item = data[index];
+          const name = prompt('Name:', item.name);
+          const description = prompt('Description:', item.description);
+          if (name && description) {
+            data[index] = { name, description };
+            renderEntries();
+          }
+        }
       });
     </script>
   </body>
