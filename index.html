@@ -9,6 +9,7 @@
         color: #0f0;
         font-family: monospace;
         padding: 20px;
+        margin-right: 320px;
       }
       input {
         background: #000;
@@ -35,8 +36,11 @@
         color: #0f0;
         border-left: 1px solid #0f0;
         padding: 10px;
-        display: none;
+        display: block;
         overflow-y: auto;
+      }
+      #side-content {
+        white-space: pre-wrap;
       }
       #side-panel h3 {
         margin-top: 0;
@@ -56,7 +60,6 @@
     </div>
     <ul id="file-list"></ul>
     <div id="side-panel">
-      <button id="close-panel">Close</button>
       <div id="side-content"></div>
     </div>
     <script>
@@ -70,7 +73,20 @@
       const upFolderBtn = document.getElementById('up-folder');
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
-      const closePanelBtn = document.getElementById('close-panel');
+
+      function typeText(el, text, speed, cb) {
+        el.textContent = '';
+        let i = 0;
+        (function type() {
+          if (i <= text.length) {
+            el.textContent = text.slice(0, i);
+            i++;
+            setTimeout(type, speed);
+          } else if (cb) {
+            cb();
+          }
+        })();
+      }
 
       function escapeHtml(str) {
         return str
@@ -97,9 +113,6 @@
         return html;
       }
 
-      closePanelBtn.addEventListener('click', () => {
-        sidePanel.style.display = 'none';
-      });
 
       function saveData() {
         localStorage.setItem('fsData', JSON.stringify(fsData));
@@ -239,8 +252,14 @@
             refreshResults();
           }
         } else if (e.target.classList.contains('name') && item.type === 'file') {
-          sideContent.innerHTML = `<h3>${item.name}</h3><div>${parseMarkdown(item.description || '')}</div>`;
-          sidePanel.style.display = 'block';
+          sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
+          const descEl = document.getElementById('desc');
+          const temp = document.createElement('div');
+          temp.innerHTML = parseMarkdown(item.description || '');
+          const plain = temp.textContent || '';
+          typeText(descEl, plain, 15, () => {
+            descEl.innerHTML = parseMarkdown(item.description || '');
+          });
         } else if (e.target.classList.contains('name') && item.type === 'dir') {
           dirStack.push(currentDir);
           currentDir = item;
