@@ -76,6 +76,8 @@
         localStorage.setItem('fsData', JSON.stringify(fsData));
       }
 
+      const searchInput = document.getElementById('search');
+
       if (fsData.children.length === 0) {
         fetch('database.json')
           .then(res => res.json())
@@ -93,8 +95,6 @@
         renderFileList();
         refreshResults();
       }
-
-      const searchInput = document.getElementById('search');
 
       function renderResults(results) {
         if (results.length === 0) {
