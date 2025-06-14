@@ -7,7 +7,7 @@ const DATABASE_ID = process.env.DATABASE_ID;
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const NOTION_VERSION = '2022-06-28';
 
-app.get('/database.json', async (req, res) => {
+app.get('/database', async (req, res) => {
   try {
     const response = await fetch(
       `https://api.notion.com/v1/databases/${DATABASE_ID}/query`,

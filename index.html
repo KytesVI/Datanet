@@ -155,7 +155,7 @@
 
       const searchInput = document.getElementById('search');
 
-      fetch('database.json')
+      fetch('database')
         .then(res => res.json())
         .then(json => {
           const children = (json.results || []).map(page => {
