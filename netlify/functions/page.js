@@ -8,11 +8,11 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    const response = await notion.pages.retrieve({ page_id: id });
+    const response = await notion.blocks.children.list({ block_id: id, page_size: 100 });
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(response)
+      body: JSON.stringify(response.results)
     };
   } catch (error) {
     console.error(error);

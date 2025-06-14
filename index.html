@@ -136,13 +136,45 @@
         return html;
       }
 
+      function blocksToMarkdown(blocks) {
+        const getText = rich =>
+          (rich || []).map(r => r.plain_text).join('');
+        return (blocks || [])
+          .map(block => {
+            switch (block.type) {
+              case 'heading_1':
+                return '# ' + getText(block.heading_1.rich_text);
+              case 'heading_2':
+                return '## ' + getText(block.heading_2.rich_text);
+              case 'heading_3':
+                return '### ' + getText(block.heading_3.rich_text);
+              case 'bulleted_list_item':
+                return '- ' + getText(block.bulleted_list_item.rich_text);
+              case 'numbered_list_item':
+                return '1. ' + getText(block.numbered_list_item.rich_text);
+              default:
+                return getText(block[block.type]?.rich_text || []);
+            }
+          })
+          .join('\n');
+      }
+
       function openFile(item) {
-        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
+        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc">Loading...</div>`;
         sidePanel.scrollTop = 0;
-        const descEl = document.getElementById('desc');
-        const html = parseMarkdown(item.description || '');
-        descEl.style.whiteSpace = 'normal';
-        typeText(descEl, html, 1000, true);
+        fetch(`/page/${item.id}`)
+          .then(res => res.json())
+          .then(blocks => {
+            const md = blocksToMarkdown(blocks);
+            const html = parseMarkdown(md);
+            const descEl = document.getElementById('desc');
+            descEl.style.whiteSpace = 'normal';
+            typeText(descEl, html, 1000, true);
+          })
+          .catch(() => {
+            const descEl = document.getElementById('desc');
+            descEl.textContent = 'Error loading page';
+          });
       }
 
 
