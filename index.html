@@ -155,15 +155,17 @@
             fsData = {
               name: 'root',
               type: 'dir',
-              children: json.map(page => ({
-                id: page.id,
-                name:
-                  page?.properties?.Entry?.title?.[0]?.plain_text ||
-                  page?.properties?.Name?.title?.[0]?.plain_text ||
-                  'Untitled',
-                type: 'file',
-                description: ''
-              }))
+              children: json
+                .map(page => ({
+                  id: page.id,
+                  name:
+                    page?.properties?.Entry?.title?.[0]?.plain_text ||
+                    page?.properties?.Name?.title?.[0]?.plain_text ||
+                    'Untitled',
+                  type: 'file',
+                  description: ''
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name))
             };
           } else {
             fsData = json || { name: 'root', type: 'dir', children: [] };
