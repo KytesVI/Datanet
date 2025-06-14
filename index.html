@@ -137,12 +137,19 @@
       }
 
       function openFile(item) {
-        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc"></div>`;
+        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc">Loading...</div>`;
         sidePanel.scrollTop = 0;
         const descEl = document.getElementById('desc');
-        const html = parseMarkdown(item.description || '');
-        descEl.style.whiteSpace = 'normal';
-        typeText(descEl, html, 1000, true);
+        fetch(`page/${item.id}`)
+          .then(res => res.json())
+          .then(data => {
+            const html = parseMarkdown(data.description || '');
+            descEl.style.whiteSpace = 'normal';
+            typeText(descEl, html, 1000, true);
+          })
+          .catch(() => {
+            descEl.textContent = 'Error loading entry.';
+          });
       }
 
 
