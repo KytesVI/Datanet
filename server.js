@@ -53,7 +53,9 @@ app.get('/page/:id', async (req, res) => {
     }
 
     const page = await response.json();
-    const nameProp = page.properties?.Name?.title || [];
+    const props = page.properties || {};
+    const titleKey = Object.keys(props).find(key => props[key].type === 'title');
+    const nameProp = props[titleKey]?.title || [];
     const name = nameProp.map(t => t.plain_text).join('') || 'Untitled';
 
     let description = '';

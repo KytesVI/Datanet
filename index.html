@@ -159,7 +159,11 @@
         .then(res => res.json())
         .then(json => {
           const children = (json.results || []).map(page => {
-            const nameProp = page.properties?.Name?.title || [];
+            const props = page.properties || {};
+            const titleKey = Object.keys(props).find(
+              key => props[key].type === 'title'
+            );
+            const nameProp = props[titleKey]?.title || [];
             const name = nameProp.map(t => t.plain_text).join('') || 'Untitled';
             return { id: page.id, name, type: 'file' };
           });
