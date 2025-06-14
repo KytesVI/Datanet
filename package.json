@@ -2,12 +2,11 @@
   "name": "datanet",
   "version": "1.0.0",
   "description": "Datanet interface",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "netlify dev",
     "test": "echo \"No tests specified\""
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "@notionhq/client": "^2.2.1"
   }
 }

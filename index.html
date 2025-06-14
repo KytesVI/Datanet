@@ -148,7 +148,7 @@
 
       const searchInput = document.getElementById('search');
 
-      fetch('database.json')
+      fetch('/database')
         .then(res => res.json())
         .then(json => {
           fsData = json || { name: 'root', type: 'dir', children: [] };
