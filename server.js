@@ -28,12 +28,8 @@ app.get('/database.json', async (req, res) => {
     }
 
     const data = await response.json();
-    const children = (data.results || []).map(page => {
-      const nameProp = page.properties?.Name?.title || [];
-      const name = nameProp.map(t => t.plain_text).join('') || 'Untitled';
-      return { id: page.id, name, type: 'file' };
-    });
-    res.json({ name: 'root', type: 'dir', children });
+    // Forward the Notion query payload directly
+    res.json(data);
   } catch (err) {
     console.error(err);
     res.status(500).send('Error fetching database');

@@ -158,7 +158,12 @@
       fetch('database.json')
         .then(res => res.json())
         .then(json => {
-          fsData = json || { name: 'root', type: 'dir', children: [] };
+          const children = (json.results || []).map(page => {
+            const nameProp = page.properties?.Name?.title || [];
+            const name = nameProp.map(t => t.plain_text).join('') || 'Untitled';
+            return { id: page.id, name, type: 'file' };
+          });
+          fsData = { name: 'root', type: 'dir', children };
           currentDir = fsData;
           renderFileList();
           refreshResults();
