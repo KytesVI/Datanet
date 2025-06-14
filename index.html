@@ -169,7 +169,7 @@
             const html = parseMarkdown(md);
             const descEl = document.getElementById('desc');
             descEl.style.whiteSpace = 'normal';
-            descEl.innerHTML = html;
+            typeText(descEl, html, 1000, true);
           })
           .catch(() => {
             const descEl = document.getElementById('desc');
