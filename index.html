@@ -160,7 +160,8 @@
       }
 
       function openFile(item) {
-        sideContent.innerHTML = `<h3>${item.name}</h3><div id="desc">Loading...</div>`;
+        const typeInfo = item.entryType ? `<p>${item.entryType}</p>` : '';
+        sideContent.innerHTML = `<h3>${item.name}</h3>${typeInfo}<div id="desc">Loading...</div>`;
         sidePanel.scrollTop = 0;
         fetch(`/page/${item.id}`)
           .then(res => res.json())
@@ -195,6 +196,7 @@
                     page?.properties?.Name?.title?.[0]?.plain_text ||
                     'Untitled',
                   type: 'file',
+                  entryType: page?.properties?.Type?.select?.name || '',
                   description: ''
                 }))
                 .sort((a, b) => a.name.localeCompare(b.name))
