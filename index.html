@@ -32,8 +32,9 @@
       }
       #results { margin-top: 20px; }
       #toolbar { margin-top: 20px; }
-      #file-list { list-style: none; padding-left: 0; margin-top: 10px; }
-      #file-list li { display: flex; align-items: center; padding: 4px 0; }
+#file-list { list-style: none; padding-left: 0; margin-top: 10px; }
+#file-list li { display: flex; align-items: center; padding: 4px 0; }
+#file-list li.category { font-weight: bold; margin-top: 10px; }
       #file-list li .icon { width: 20px; }
       #file-list li .name { flex: 1; cursor: pointer; }
       #side-panel {
@@ -273,13 +274,28 @@
           fileList.innerHTML = '<li>No items.</li>';
           return;
         }
-        fileList.innerHTML = children
-          .map(
-            (item, index) =>
-              `<li><span class="icon">&gt;</span>` +
-              `<span class="name" data-index="${index}">${item.name}</span></li>`
-          )
+
+        const groups = {};
+        children.forEach((item, index) => {
+          const type = item.entryType || 'Uncategorized';
+          if (!groups[type]) groups[type] = [];
+          groups[type].push({ item, index });
+        });
+
+        const html = Object.keys(groups)
+          .sort()
+          .map(type => {
+            const items = groups[type]
+              .map(
+                ({ item, index }) =>
+                  `<li><span class="icon">&gt;</span>` +
+                  `<span class="name" data-index="${index}">${item.name}</span></li>`
+              )
+              .join('');
+            return `<li class="category">${type}</li>` + items;
+          })
           .join('');
+        fileList.innerHTML = html;
       }
 
 
