@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEIL BIO-SYNTHESIS INTERFACE</title>
+  <style>
+    :root {
+      --bg: #120700;
+      --panel: #160a01;
+      --panel-soft: rgba(18, 7, 0, 0.72);
+      --text: #ffab4d;
+      --text-dim: #d17a2c;
+      --text-bright: #ffd08c;
+      --danger: #ff6e3a;
+      --line: rgba(255, 171, 77, 0.14);
+      --line-strong: rgba(255, 171, 77, 0.32);
+      --glow: rgba(255, 140, 40, 0.22);
+      --active: rgba(255, 208, 140, 0.14);
+      --track: rgba(255, 171, 77, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(255, 140, 40, 0.08), transparent 32%),
+        #080300;
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+    }
+
+    .screen {
+      width: min(1380px, 100%);
+      background: linear-gradient(180deg, rgba(28, 12, 2, 0.98), rgba(14, 6, 1, 0.99));
+      border: 2px solid rgba(255, 171, 77, 0.45);
+      box-shadow: 0 0 30px var(--glow), inset 0 0 0 1px rgba(255, 171, 77, 0.08);
+      padding: 18px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 171, 77, 0.04) 0px,
+        rgba(255, 171, 77, 0.04) 1px,
+        transparent 3px,
+        transparent 5px
+      );
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 0%, rgba(0,0,0,0.12) 50%, transparent 100%);
+      animation: scan 7s linear infinite;
+      pointer-events: none;
+      opacity: 0.28;
+    }
+
+    .topline {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-bright);
+      font-size: 0.88rem;
+    }
+
+    .console-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .sidebar, .terminal-main {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      position: relative;
+    }
+
+    .sidebar {
+      padding: 14px;
+      min-height: 76vh;
+    }
+
+    .terminal-main {
+      padding: 14px;
+      min-height: 76vh;
+    }
+
+    .panel-title {
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .status-list, .command-bank {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .cell-btn, .cmd-btn {
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: var(--text);
+      background: rgba(255, 171, 77, 0.03);
+      border: 1px solid transparent;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease;
+    }
+
+    .cell-btn:hover, .cmd-btn:hover {
+      background: rgba(255, 171, 77, 0.08);
+      border-color: var(--line);
+    }
+
+    .cell-btn.active, .cmd-btn.active {
+      background: var(--active);
+      border-color: var(--line-strong);
+      color: var(--text-bright);
+    }
+
+    .cell-name {
+      display: block;
+      color: var(--text-bright);
+      margin-bottom: 4px;
+    }
+
+    .cell-meta {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.35;
+    }
+
+    .date-nav {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) 48px;
+      gap: 8px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-btn {
+      text-align: center;
+      padding: 8px 0;
+      background: rgba(255, 171, 77, 0.03);
+      border: 1px solid transparent;
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 171, 77, 0.08);
+      border-color: var(--line);
+    }
+
+    .date-display {
+      text-align: center;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 171, 77, 0.04);
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--text-bright);
+    }
+
+    .prompt-input {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255, 171, 77, 0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font: inherit;
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .prompt-input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 1px rgba(255, 208, 140, 0.18);
+    }
+
+    .output {
+      white-space: normal;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      min-height: 58vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .block {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .bright { color: var(--text-bright); }
+    .danger { color: var(--danger); }
+
+    .cursor::after {
+      content: "_";
+      animation: blink 1s steps(1) infinite;
+      margin-left: 4px;
+    }
+
+    .footer-bar {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .section-title {
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat-card {
+      border: 1px solid var(--line);
+      background: rgba(255, 171, 77, 0.03);
+      padding: 10px 12px;
+    }
+
+    .stat-label {
+      color: var(--text-dim);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      color: var(--text-bright);
+    }
+
+    .matrix-table, .pod-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+    }
+
+    .matrix-table th, .matrix-table td,
+    .pod-table th, .pod-table td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .matrix-table th, .pod-table th {
+      color: var(--text-bright);
+      background: rgba(255, 171, 77, 0.05);
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+    }
+
+    .progress-row {
+      display: grid;
+      grid-template-columns: 170px 1fr 74px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      color: var(--text-dim);
+    }
+
+    .bar {
+      height: 12px;
+      border: 1px solid rgba(255,171,77,.28);
+      background: var(--track);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,208,140,.22) 45%,
+        transparent 100%
+      );
+      transform: translateX(-120%);
+      animation: barSweep 2.8s linear infinite;
+      pointer-events: none;
+    }
+
+    .fill {
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,171,77,.45), rgba(255,208,140,.95));
+      transition: width .8s ease;
+    }
+
+    .progress-value {
+      color: var(--text-bright);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .live-value {
+      display: inline-block;
+      min-width: 60px;
+    }
+
+    .pulse-number {
+      animation: numberPulse 1.8s ease-in-out infinite;
+    }
+
+    .bpm-live {
+      animation: bpmGlow 1.2s ease-in-out infinite;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 171, 77, 0.05);
+      color: var(--text-bright);
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .note-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .note-list li {
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .pod-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .pod-card {
+      border: 1px solid var(--line);
+      background: rgba(255, 171, 77, 0.03);
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pod-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,171,77,.025), transparent);
+      animation: podScan 4s linear infinite;
+      pointer-events: none;
+    }
+
+    .pod-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--text-bright);
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pod-meta {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .small {
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      position: relative;
+      z-index: 1;
+    }
+
+    .ready {
+      color: var(--text-bright);
+    }
+
+    .live-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .live-box {
+      border: 1px solid var(--line);
+      background: rgba(255,171,77,.03);
+      padding: 10px 12px;
+    }
+
+    .live-box .stat-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @keyframes barSweep {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(120%); }
+    }
+
+    @keyframes podScan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @keyframes numberPulse {
+      0%, 100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+      50% { opacity: .88; text-shadow: 0 0 8px rgba(255,208,140,.28); }
+    }
+
+    @keyframes bpmGlow {
+      0%, 100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+      50% { opacity: .82; text-shadow: 0 0 10px rgba(255,110,58,.34); }
+    }
+
+    @media (max-width: 1100px) {
+      .pod-card-grid, .stats-grid, .live-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .console-grid {
+        grid-template-columns: 1fr;
+      }
+      .sidebar, .terminal-main {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topline {
+        flex-direction: column;
+      }
+      .prompt-line {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .progress-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .progress-value {
+        text-align: left;
+      }
+      .matrix-table, .pod-table {
+        font-size: 0.82rem;
+      }
+    }
+  
+    .ascii{
+      font-family: "Courier New", monospace;
+      font-size: 10px;
+      line-height: 10px;
+      color: rgba(255,208,140,.85);
+      overflow:auto;
+      border:1px solid var(--line);
+      padding:10px;
+      background: rgba(255,171,77,.03);
+    }
+
+</style>
+</head>
+<body>
+  <main class="screen">
+    <div class="topline">
+      <span>VEIL INTERFACE</span>
+      <span>BATCH CONTROL PANEL</span>
+      <span>BATCH 28439-C</span>
+    </div>
+
+    <section class="console-grid">
+      <aside class="sidebar">
+        <div class="panel-title">Tabs</div>
+        <div class="status-list" id="itemList"></div>
+
+        <div class="panel-title">Quick Views</div>
+        <div class="command-bank">
+          <button class="cmd-btn" data-command="status">Batch Status</button>
+          <button class="cmd-btn" data-command="alerts">Ready Pods</button>
+          <button class="cmd-btn" data-command="clear">Clear</button>
+        </div>
+      </aside>
+
+      <section class="terminal-main">
+        <div class="date-nav">
+          <button class="nav-btn" id="prevPeriodBtn" aria-label="Previous tab">&larr;</button>
+          <div class="date-display" id="periodDisplay">GENOME SEQUENCE ANALYSIS</div>
+          <button class="nav-btn" id="nextPeriodBtn" aria-label="Next tab">&rarr;</button>
+        </div>
+
+        <div class="prompt-line">
+          <span class="bright">&gt; VEIL/NODE_QUERY</span>
+          <input id="commandInput" class="prompt-input" value="item 01" aria-label="Terminal command input" />
+        </div>
+
+        <div class="output" id="output"></div>
+
+        <div class="footer-bar">
+          <span id="statusLabel">Awaiting input</span>
+          <span class="cursor">Live Research Node</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const periods = [
+      { id: "01", title: "GENOME SEQUENCE ANALYSIS" },
+      { id: "02", title: "LIVE POD MONITORING" }
+    ];
+
+    const snapshot = [
+      { id: "01", label: "GENOME SEQUENCE ANALYSIS", summary: "Genome sequence analysis, matrix, characteristics, notes" },
+      { id: "02", label: "LIVE POD MONITORING", summary: "Live pod monitoring, batch status, pod feed" }
+    ];
+
+    const genomeMatrix = [
+      ["Humanoid", "Vesk", 17, "Muscular density / combat resilience"],
+      ["Humanoid", "Human", 11, "Neural adaptability baseline"],
+      ["Humanoid", "Lashunta", 9, "Psionic receptivity"],
+      ["Humanoid", "Shirren", 8, "Neural network structuring"],
+      ["Humanoid", "Kasatha", 6, "Multi-limb coordination markers"],
+      ["Humanoid", "Gray", 21, "Cognitive amplification / pattern processing"],
+      ["Non-Humanoid", "Akata", 10, "Viral mutation vectors"],
+      ["Non-Humanoid", "Swarm Biomass", 18, "Regenerative growth / tissue rewriting"]
+    ];
+
+    const genomeCharacteristics = [
+      ["Hybrid Stability Index", "94%"],
+      ["Cross-Species Integration", "STABLE"],
+      ["Mutation Volatility", "CONTROLLED"],
+      ["Neural Plasticity", "VERY HIGH"],
+      ["Psionic Compatibility", "ELEVATED"]
+    ];
+
+    const sequenceNotes = [
+      "No dominant humanoid baseline",
+      "Gray neural patterns integrated across all sequences",
+      "Regenerative traits scale with neural activity",
+      "Genome reacts to external stimuli during growth"
+    ];
+
+    const batchStatus = [
+      ["Total Pods", "16"],
+      ["Active Specimens", "16"],
+      ["Completed", "2"],
+      ["In Development", "14"]
+    ];
+
+    const podFeed = [
+      ["01", "ACTIVE", 97, 94, 96, 61, 92, "Stable"],
+      ["02", "ACTIVE", 95, 92, 94, 63, 90, "Stable"],
+      ["03", "ACTIVE", 93, 90, 92, 65, 88, "Stable"],
+      ["04", "ACTIVE", 91, 88, 90, 66, 87, "Stable"],
+      ["05", "ACTIVE", 90, 86, 89, 68, 85, "Stable"],
+      ["06", "COMPLETE", 100, 100, 99, 0, 100, "READY"],
+      ["07", "ACTIVE", 88, 84, 87, 70, 83, "Stable"],
+      ["08", "ACTIVE", 87, 83, 86, 72, 82, "Stable"],
+      ["09", "ACTIVE", 85, 81, 84, 73, 80, "Stable"],
+      ["10", "ACTIVE", 84, 80, 83, 75, 79, "Stable"],
+      ["11", "ACTIVE", 82, 78, 81, 76, 77, "Stable"],
+      ["12", "ACTIVE", 80, 76, 79, 78, 75, "Stable"],
+      ["13", "ACTIVE", 96, 93, 95, 60, 91, "Stable"],
+      ["14", "ACTIVE", 94, 91, 93, 62, 89, "Stable"],
+      ["15", "COMPLETE", 100, 100, 98, 0, 100, "READY"],
+      ["16", "ACTIVE", 89, 85, 88, 69, 84, "Stable"]
+    ];
+
+    const output = document.getElementById("output");
+    const commandInput = document.getElementById("commandInput");
+    const statusLabel = document.getElementById("statusLabel");
+    const itemList = document.getElementById("itemList");
+    const periodDisplay = document.getElementById("periodDisplay");
+    const prevPeriodBtn = document.getElementById("prevPeriodBtn");
+    const nextPeriodBtn = document.getElementById("nextPeriodBtn");
+    let currentPeriodIndex = 0;
+    let liveTicker = null;
+
+    function stopLiveTicker() {
+      if (liveTicker) {
+        clearInterval(liveTicker);
+        liveTicker = null;
+      }
+    }
+
+    function updatePeriodDisplay(periodId) {
+      const period = periods.find(p => p.id === periodId);
+      periodDisplay.textContent = period ? period.title : "UNKNOWN TAB";
+    }
+
+    function setActiveItem(id) {
+      document.querySelectorAll(".cell-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.value === id);
+      });
+    }
+
+    function progressRow(label, value, live = false, dataId = "") {
+      return `
+        <div class="progress-row">
+          <div class="progress-label">${label}</div>
+          <div class="bar">
+            <div class="fill ${live ? "live-fill" : ""}" ${dataId ? `data-id="${dataId}"` : ""} style="width:${value}%"></div>
+          </div>
+          <div class="progress-value">
+            <span class="live-value ${live ? "pulse-number" : ""}" ${dataId ? `data-value="${dataId}"` : ""}>${value}%</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function animateLiveReadings() {
+      stopLiveTicker();
+      const liveNodes = Array.from(document.querySelectorAll("[data-id]"));
+      if (!liveNodes.length) return;
+
+      liveTicker = setInterval(() => {
+        const pods = document.querySelectorAll(".pod-card");
+        pods.forEach((card) => {
+          ["growth","sync","stability","brain"].forEach((metric) => {
+            const fill = card.querySelector(`[data-id*="${metric}"].live-fill`);
+            const valueNode = card.querySelector(`[data-value*="${metric}"]`);
+            if (!fill || !valueNode) return;
+            const base = parseInt(fill.dataset.base, 10);
+            const drift = parseInt(fill.dataset.drift, 10);
+            let next = base + Math.floor(Math.random() * (drift * 2 + 1)) - drift;
+            next = Math.max(0, Math.min(100, next));
+            fill.style.width = `${next}%`;
+            valueNode.textContent = `${next}%`;
+          });
+
+          const hrNode = card.querySelector("[data-hr]");
+          if (hrNode && hrNode.dataset.baseHr !== "0") {
+            const baseHr = parseInt(hrNode.dataset.baseHr, 10);
+            const nextHr = Math.max(48, baseHr + Math.floor(Math.random() * 5) - 2);
+            hrNode.textContent = `${nextHr} bpm`;
+          }
+        });
+
+        document.querySelectorAll(".live-box [data-live-box]").forEach((node) => {
+          const base = parseInt(node.dataset.base, 10);
+          const drift = parseInt(node.dataset.drift, 10);
+          let next = base + Math.floor(Math.random() * (drift * 2 + 1)) - drift;
+          next = Math.max(0, Math.min(100, next));
+          node.textContent = `${next}%`;
+        });
+      }, 1300);
+    }
+
+    function renderTab1() {
+      stopLiveTicker();
+
+      const matrixRows = genomeMatrix.map(row => `
+        <tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}%</td>
+          <td>${row[3]}</td>
+        </tr>
+      `).join("");
+
+      const characteristics = genomeCharacteristics.map(([label, value]) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+        </div>
+      `).join("");
+
+      const matrixBars = genomeMatrix.map(([type, origin, contribution]) =>
+        progressRow(`${origin} (${type})`, contribution, false)
+      ).join("");
+
+      const notes = sequenceNotes.map(note => `<li>${note}</li>`).join("");
+
+      output.innerHTML = `
+        <div class="block">
+          <div class="section-title">Composite Genome Matrix</div>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Source Type</th>
+                <th>Origin</th>
+                <th>Contribution</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>${matrixRows}</tbody>
+          </table>
+        </div>
+
+        <div class="block">
+          <div class="section-title">Contribution Visualization</div>
+          ${matrixBars}
+        </div>
+
+        <div class="block">
+          <div class="section-title">Genome Characteristics</div>
+          <div class="stats-grid">${characteristics}</div>
+        </div>
+
+        <div class="block">
+          <div class="section-title">Sequence Notes</div>
+          <ul class="note-list">${notes}</ul>
+        
+        <div class="block">
+          <div class="section-title">Specimen Projection</div>
+          <pre class="ascii">                                                                                                   
+                                                                                                   
+                                                                                                   
+                                                                                                   
+                                                                                                   
+                                         ░░░░░░░░░░░                                               
+                                        ░░░▓▓▓▓▓▓▓▒░░                                              
+                                      ░░▒█▒▒▒░░▒▓▓▓▓▓░░                                            
+                                    ░░░▓▓▒▓▒░░▒▒▓▓▓█▒░░                                            
+                                    ░░▓▒▓▓▓▓██▓██▓▓▓▓░░                                            
+                                    ░▒██▓▓▓░▒▓▒░░▒▒▓█░░░░                                          
+                                    ░░█▓█▓▓▓▓▓▓▓▓████▓░░░                                          
+                                    ░░▓▓▓▓▓▓▒▒█▓▒▒▓▓█▓▓░░                                          
+                                      ░░▓▓▓▓▓▓▓▒▒█▓▒▓▓█▒░░                                         
+                                       ░░▓▓▓▒▒▓▓█▓▒▓▒▒▒▒▓▒░░░░░                                    
+                                        ░░▓▓▓▒██▓▒▒▒▓▒▒▒▓▓▒▓█▓▓░░░                                 
+                                        ░░▒▓▓██▓▒▒▒▒▒▒▒▓▓▓▓▒▒▒▒▒▓▓░░░░                             
+                                    ░░░░░▓██▓▓▓▒▒▒▒▒▓▒▒▒▒▓▒▒░░░▒▒▒▒▓▓░░                            
+                                ░ ░░░░█▓▓▓▓▓▓▓▒▒▒░░░▒▒▒▒▒▒▓▒▒░░░▒▒▒▒▒▓▓░░                          
+                                ░░░▓▒▓▓▓▒▒▒▓▓▓▒▒▒▒░░▒▒▒▒▒▒▒▓▓▒▒░░▒▒▒▒▒▒▓░░                         
+                                ░░▓█▒▓▓▒▒▒▓▓▓▒▒░░░▒▒▒▒▒▒▒▓▓▓▓▓▓▒▒▒▒▒▒▒▒▓▓░                         
+                             ░░░░▓█▓▒▒▒▒▒▓▓▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓███▓▓▓▓▒▒▒▒▒▓░░░                       
+                              ░░███▓▓▒▒▒▓▓▓▓▓▓▓▒▒▒▒▒▓▒▒▒▓▓▓▓▓█████▓▓▓▒▒▓▓█▒░░░                     
+                              ░▓███▓▓▓▓▓█▓▓▓▓▓██▓▓█▓▓▓██████████▓▒░▒██▓▓▓▒▒▒░░                     
+                             ░░▒███▓▓▓███▓▒▒▒▒▒▒▒▓▓▒▒▒░░▒▓█████▓░░░░░▓▒▓▓▒░▓▒░                     
+                             ░░░██▓▓▓████▓▒░▒▒▒▒▒▓▓▓▒▒░░░▒▓██▒░░░   ░▒▓▒▒▒▒▒▓░░                    
+                             ░░█▓▓▓▓██▓██▓▒▒▒▒▒▒▓▓▓▓▓▓▒▒▒▒▒▓█░░      ░▒▓▒▒▒▒▒▒░░                   
+                             ░▒██▓▓▓▓▓▓▓█▓▒▒▓▓▓▓▓▓▓▓█▓▓▒▒▒▒▓█░░      ░░▓▓▒▒▒▒▓▓░░                  
+                             ░░▓▓▓█▓▓▓▓▓▓▓▓▓▓▓▓█████████▓▓▒▓▒▓░░░     ░░█▓▒░▓▒▓▓▒░░░               
+                             ░░▓██▓▓▓▒▒▒▒▓▓▒▓███████▓█████▓▒▒▒▓░░     ░░░▓▓▒▒▓▒▒▓▓▓░               
+                            ░░▒███▓▓▓▒▒▒▒▓▒░▒▒▒▓▓▓█▓▓██░░██▒▒▒▓▓░       ░░▒█▓▓▓▒▒▓▓▒░              
+                           ░░▒██▓█▓▓▓▓▒▒▒▒▒░░▒▒▒▒▓▓██▓░░░░▓▓▒▒▓▒▒░░░    ░░░░▓▓▓▒▒▒█▓░░             
+                         ░░░▓█▓█▓██▓▓▒▒▒▒▒▒▒░▒▒▒▒▓▓█░░░  ░▒▓▓▒▒▒▓▓░░       ░▒█▓▒▒▓▒▓▒░░            
+                         ░░░█▓▓█▓▓▓▓▓▒▒▓▒▒▒▒▒▒▒▒▓▓▓█░░   ░░▓▓▒▒▓▓▓▓░░░     ░░██▒▒▓▒▓▓░░            
+                         ░░▒▓▓▓██▓█▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓██░░░  ░░█▒▒▓▒▓▓▓░░░     ░░▓▓▓▒▓▒▓█░             
+                          ░▓▓▓█▓████▓▓▒▓▓▓▒▒▓▓▓▓▓▓▓██▓░ ░░▓▓▒▒▒▓▓▓░░░      ░▓▓▓▓▒▒▒▒▓▒░            
+                         ░░▓▓▓▓▓▓███▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█▒░░░░▓▒▒▒▒▓▓░░░       ░▒▓▒▓▒▒▒▒▓▒             
+                         ░▓▓▓▓▓██████▓▓▓▒▒▓▓▓▒▓▓▒▒▓▓▓█░░░▓▒▒▒▒▓▓░░         ░░█▓▓▒▒▒▒▓▒             
+                         ░▓▓▓▒▓▓█████▓▓█▓▓▓▓▒▓▓▓▒▒▒▒▓▓█▒▓▒▒▒▒▓▒░░          ░░▒▓▓▒▒▒▒▓▒             
+                       ░░░▓▓▓▓▓███▓██████▓▓▒▒▓▒▒▒▒▒▒▒▓█▒▒▒▒▓▓░░             ░░▓▓▒▒▒▒▓▒░            
+                       ░░▓▓▒▓▓▓▒█████████▓▓▓▓▒▒▒▒▒▒▒▒▓▒░▒▒▓░░░░              ░░▓▒▒▒▒▓▓░            
+                     ░░░▓▓▓▓█▓▒█▓▓▓███▓▓██▓▓▓▒▒▒▒▒▒▒▓░░▒▓█▒░░                ░░░▒▒▒▒▓▓             
+                   ░░░▒█▓▒▒▓░░█▓▓▓▓▓███▓███▓▓▒▒▒▒▒▓▓░░▒▓███░░                 ░░▓▒▒▒▓▓░            
+                   ░░▒▓▓▓▒▒▓▒█▓▓▓▒▓▓█████▓▓▓▓▓▒▒▒▓▓▒░▒████▓░░                  ░▓▒▒▓▓▓░            
+                 ░░░▓▓▓▓▓▒▒▒▓▓▓▓▓▓▒▓▓█████▓▓▓▓▓▓█▓▒░▒▓███▓█░░                  ░▓▓▓▓▓▓░            
+                ░░▓▓▓▓▓▓▓▒▒▒▒█▓▓▒▓▓▒▓██████▓▓▓▓█▓▒▒▒▒▓█▓▓▓█░░                ░░▒▓▒▒▓▓▓░            
+              ░░░▓▓▓▓▓▓▓▓▒▓▓▒▓▓▓▓▓▒▓▓▓▓█████▓▓█▓▓▒▒▒▒▓█▓▓▓█░░              ░░░▓▓▒▒▒▓█▓░            
+          ░░░░▒▓▓▓▓▓▓▓▓▓▒▓▓█▓▒▓▓▓▒▒▓█▓▓▓██████▓▓▓▒▓▒▒▓█▓▓▓█▒░           ░░░▓▓▓▒▒▒▒░▒▓▓░░░          
+          ░░▒▓▓▓▓▓▓▓▓▓▓▓▒█▓▓███▓▒▒▓▓▓███▓▓░░██▓▓▓▓█▓▒▓▓▓▓▓▓▓░           ░░▓▓▓▒▒▒▒░▒▒▓▓░░░          
+        ░░░░▓▓▓▓▓▓░░▒█▓▓▒█▓▓▓▓▓▒▒▓▓▓███▓░░░░░▓▓█▓▒▓█▓▒█▓▓▓▓█░          ░░█▓█▓▓▒▒▒▒▓▓▓▓░░           
+        ░░░▓▓▓▓▓▒░░░░▒█▓▓█▓▓▓▓▓▒▓███▓▒░░░░ ░▒▓▓▓▓▒▓█▓▓██▓▒▓▓░          ░░█▓█▓▒▒▒▓▓▓▓▓▓░            
+         ░░▒▓▓▓░░   ░░███▓█▓▒▓▒▒███▒░      ░░██░▓▓▓██▓▓▓▒▒▒▓▒░░        ░░▓█▒▒▒▒▒▒▓▓▓▓▓░░░          
+          ░░▓▓▓▓░░  ░░▓████▓▓▓▒▓█▓░░░       ░▓███████▓▓▒▒▒▒▓█░░         ░▒█▓▓█▓▒▒▓▓▓█▓▒░░          
+           ░░░░░░░   ░░▒▓▓▓▒▒▒▓██░░░         ░░░░░░▓█▓▓▒▒▒▒▓█▒░        ░░████░█▓▓█▒░▓▓▓░░          
+             ░░░     ░░▓▓▓▒▒▒▒▓█▒░░░░          ░░░░░▓▓▒▒▒▒▒▒▓█░░        ░▒▓▓█▒▓▓▓█░░▒█▓░░          
+                     ░░▓▓▓▒▒▒▓█▓▓▓▒▓▒░░░           ░░▓▒▒▒▒▒▒▓█▒░░       ░░▒█▓░▓▓▓█░░░░░░░          
+                     ░▒▓▓▓▒▒▓█▓▓▓███▓▓░░           ░░█▓▒▒▒▒▒▓██░░░░░     ░░░░░░██▓░                
+                     ░▓█▒▓▒▒▓▓▓▒▓▓██▓▓░░           ░░█▓▒▒▒▒▒▒█▓▓▒▒░░░        ░░░░░░                
+                    ░░█▓▓▒▒▓▓▓▓▓▓▓██▓▓░░           ░░█▓▒▒▒▒▒▒▓▓▓█▓▓░░                              
+                   ░░▓█▓▓▒▓▓▓▓▓▓▓▓▓█▓▓░░           ░▒█▓▓▒▒▒▒▒▓▓▓█▓▓░░                              
+                   ░░▒█▓▓▓▓▓▓▓█▓▓▓▓▓█▓░░           ░▓▓▓▒▒▒▒▒▒▓▓▒▓█▓▒░                              
+                    ░░▒███▓█▓▓█▓▓▓█▓▓▓░            ░▓▓█▓▒▒▒▒▒▓▓▒▒██▓░                              
+                     ░░░▓▓▓▓███████▓▓█░░           ░▒▓▓▓▓▒▒▒▒▓▓▒▒▓█▓░░                             
+                       ░░░░░░██▓▓▓▓▒▒█▓░░          ░░░██▓▓▓▒▒▓▓▓▓▓▓█░                              
+                           ░░░██▓▓▓▓▓▓█░░            ░░▒████▓▓██▓▓▓█░░                             
+                             ░░██▓▓▓▓▒▓▒░░             ░░▒▓███████▓▓▒░                             
+                           ░░░▒███▓▓▓▓▒█░░              ░ ░░░░█▓▓▓█▓▓░░                            
+                           ░░░█▓█▓██▓▓▒▓▒░                  ░▒██▓▓▓██░░                            
+                            ░▓▓▓█▓█▓▒▓▓▓▒░                 ░░▓███▓▓▓█▓░░                           
+                           ░░█▓█▓▒▓▓▒▓█▒░░                 ░░▓▓███▓▓▓█▒░░░                         
+                          ░░▓▓▓█▒▒▓▒▓░░░                   ░▓▓▓▓▓▓█▓▓██░░░                         
+                         ░░░█▓▓▓▒▓▓▓▒░░░                   ░░▓▓▒▓▓▓██▓██▒░                         
+                         ░░▒▓▒▓▒▒▓▓▓░                       ░░▓▒▓▒▓▓█▓██▓░                         
+                         ░░▓▓▒▓▒▒▓▓░░                        ░▒▓▒▒▒▒▓▓▓█▒░                         
+                       ░░░▓▓▒▓▒▒▓▓░░░                         ░▒▒▒▒▒▒▓▓█░                          
+                       ░░▒▓▒▓▓▓█▒░░                           ░░▓▒▒▒▒▒▓▓░                          
+                       ░░▓▒▒▓█▓░░                             ░░▓▒▒▒▒▒▓▓░                          
+                      ░░▓▒▒▓█▓░░░                             ░░▒▓▒▒▒▒▓▓▒░                         
+                     ░░▓▒▒▓█▓▒░                                ░▒▓▒▒▒▒▓▓▒                          
+                     ░▒▒▒▓█▓█░░                                 ░▓▒▒▒▒▓▓░                          
+                    ░░▓▒▒▓█░░░                                  ░▒▒▒▒▒▓▓░                          
+                   ░░▒▓▒▓▓█░░                                   ░░▓▒▒▒▓▓░░                         
+                   ░▒▓▓▒▓▓▓█░░░                                 ░░█▒▒▓▓▒░░                         
+                  ░░▓▓▓▒▓▓▓▒░░                                  ░░▓▒▒▓▓░░                          
+                ░░░▓▓▓▒▓▓▓▓▒░                                   ░░▓▒▒▓▒░                           
+                ░░█▓▓▓▓▓▓▓▓▓░░                                  ░░▓▒▒▓▓░░                          
+                ░░▓▓▓▓▓▓▒▓▓▓▒░░░░░░░░░░░░░░░░░░░░░              ░░▓▒▒▓▓▓░░                         
+              ░░░██▓▒▓▓▓▓█▓▓▒░░░░░░░░░░░░░░░░░░░░░░░            ░░▓▒▒▓▓▓░░                         
+              ░░░█▓▓▓▓████▒▒░░░░░░░░░░░░░░░░░░░░░░░░░           ░░█▓▒▒▓█░░                         
+                ░░░░░░░░░░░░░░░░░░░░░░░░░░░                     ░░█▓▓▒▓▓▓░     ░░░                 
+                                 ░░░░░░░░░                    ░░░▒▓▓▓▒▓▓▓░░░░░░░░░░░░░░░░          
+                                                              ░░▒▓▒▓▓▒▓▓▓▒░░░░░░░░░░░░░░░░░░░░     
+                                                              ░▒▓▓▓▓▓▓▓▓▓█▒░░░░░░░░░░░░░░░░░░░░░░  
+                                                              ░▓█▒▓▓▓▓▒▓▓▓█░░░░░░░░░░░░░░░░░░      
+                                                           ░░░░▓▒▓▓▓▓▓▓▓▓▓▓▓▒░░░░░░░░░             
+                                                           ░░▒█▒▓▓▒▒▓▓▒▒▓▓▓▓▓░░░░░                 
+                                                           ░░░▓▒▒▓██▓▓▒▒▓▓█▒░░░░░                  
+                                                           ░░░▓███▒▓▓▒▒▒▓▓█░░░░                    
+                                                               ░░░░░░▓███░░░░                      
+                                                                   ░ ░░░░░░░                       
+    ░░░░░                                                                                          
+    ░░░░░░░                                                                                        
+    ░░░░░░░░░░░░░░░░░░░░                                                                           
+    ░░░░░░░░░░░░░░░░░░░░                                                                           
+  ░░░░░░░░░░░░░░░░░░░░░░░░                                                                         
+     ░░░░░░░         ░░░                                                                           
+        ░░░           ░░░                                                                          
+         ░░                                                                                        
+███████████████████████████████████████████████████████████████████████████████████████████████████
+█▓█████████████████████████████████████████████████████████████████████████████████████████████████</pre>
+        </div>
+</div>
+      `;
+      statusLabel.textContent = "Genome sequence analysis loaded";
+      setActiveItem("01");
+      currentPeriodIndex = 0;
+      updatePeriodDisplay("01");
+    }
+
+    function renderPodCard(pod) {
+      const [id, status, growth, sync, stability, heart, brain, notes] = pod;
+      const noteClass = notes === "READY" ? "ready" : "";
+      return `
+        <div class="pod-card">
+          <div class="pod-head">
+            <span>POD ${id}</span>
+            <span class="pill">${status}</span>
+          </div>
+          <div class="pod-meta">
+            ${progressRow("Growth", growth, true, `pod-${id}-growth`)}
+            ${progressRow("Neural Sync", sync, true, `pod-${id}-sync`)}
+            ${progressRow("Bio-Stability", stability, true, `pod-${id}-stability`)}
+            ${progressRow("Brain Activity", brain, true, `pod-${id}-brain`)}
+          </div>
+          <div class="small">Heart Rate: <span class="bright live-value bpm-live" data-hr="pod-${id}-hr" data-base-hr="${heart}">${heart} bpm</span></div>
+          <div class="small">Notes: <span class="${noteClass}">${notes}</span></div>
+        </div>
+      `;
+    }
+
+    function renderTab2() {
+      stopLiveTicker();
+
+      const batchCards = batchStatus.map(([label, value]) => `
+        <div class="stat-card">
+          <div class="stat-label">${label}</div>
+          <div class="stat-value">${value}</div>
+        </div>
+      `).join("");
+
+      const liveStrip = `
+        <div class="live-strip">
+          <div class="live-box"><div class="stat-label">Average Growth</div><div class="stat-value pulse-number" data-live-box data-base="91" data-drift="2">91%</div></div>
+          <div class="live-box"><div class="stat-label">Average Neural Sync</div><div class="stat-value pulse-number" data-live-box data-base="88" data-drift="2">88%</div></div>
+          <div class="live-box"><div class="stat-label">Average Bio-Stability</div><div class="stat-value pulse-number" data-live-box data-base="90" data-drift="2">90%</div></div>
+          <div class="live-box"><div class="stat-label">Average Brain Activity</div><div class="stat-value pulse-number" data-live-box data-base="87" data-drift="2">87%</div></div>
+        </div>
+      `;
+
+      const podRows = podFeed.map(pod => {
+        const [id, status, growth, sync, stability, heart, brain, notes] = pod;
+        return `
+          <tr>
+            <td>${id}</td>
+            <td>${status}</td>
+            <td>${growth}%</td>
+            <td>${sync}%</td>
+            <td>${stability}%</td>
+            <td>${heart} bpm</td>
+            <td>${brain}%</td>
+            <td>${notes}</td>
+          </tr>
+        `;
+      }).join("");
+
+      const podCards = podFeed.map(renderPodCard).join("");
+
+      output.innerHTML = `
+        <div class="block">
+          <div class="section-title">Batch Status</div>
+          <div class="stats-grid">${batchCards}</div>
+        </div>
+
+        <div class="block">
+          <div class="section-title">Live Vital Summary</div>
+          ${liveStrip}
+        </div>
+
+        <div class="block">
+          <div class="section-title">Pod Feed</div>
+          <table class="pod-table">
+            <thead>
+              <tr>
+                <th>Pod</th>
+                <th>Status</th>
+                <th>Growth</th>
+                <th>Neural Sync</th>
+                <th>Bio-Stability</th>
+                <th>Heart Rate</th>
+                <th>Brain Activity</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>${podRows}</tbody>
+          </table>
+        </div>
+
+        <div class="block">
+          <div class="section-title">Live Pod Monitoring Cards</div>
+          <div class="pod-card-grid">${podCards}</div>
+        </div>
+      `;
+
+      document.querySelectorAll(".live-fill").forEach((node) => {
+        const value = parseInt(node.style.width, 10);
+        node.dataset.base = String(value);
+        node.dataset.drift = value >= 99 ? "0" : (value >= 95 ? "1" : "2");
+      });
+
+      statusLabel.textContent = "Live pod monitoring loaded";
+      setActiveItem("02");
+      currentPeriodIndex = 1;
+      updatePeriodDisplay("02");
+      animateLiveReadings();
+    }
+
+    function showStatus() {
+      stopLiveTicker();
+      output.innerHTML = `
+        <div class="block">
+          <div class="section-title">Batch Status Snapshot</div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label">Batch ID</div><div class="stat-value">28439-C</div></div>
+            <div class="stat-card"><div class="stat-label">Genome Classification</div><div class="stat-value">HYBRIDIZED COMPOSITE</div></div>
+            <div class="stat-card"><div class="stat-label">Interface Mode</div><div class="stat-value">LIVE RESEARCH NODE</div></div>
+            <div class="stat-card"><div class="stat-label">Hybrid Stability Index</div><div class="stat-value">94%</div></div>
+            <div class="stat-card"><div class="stat-label">Completed Pods</div><div class="stat-value">2</div></div>
+            <div class="stat-card"><div class="stat-label">In Development</div><div class="stat-value">14</div></div>
+          </div>
+        </div>
+      `;
+      statusLabel.textContent = "Batch status loaded";
+      setActiveItem("");
+      updatePeriodDisplay(periods[currentPeriodIndex].id);
+    }
+
+    function showReadyPods() {
+      stopLiveTicker();
+      const readyPods = podFeed.filter(p => p[7] === "READY");
+      output.innerHTML = `
+        <div class="block">
+          <div class="section-title">Ready Pods</div>
+          <div class="pod-card-grid">${readyPods.map(renderPodCard).join("")}</div>
+        </div>
+      `;
+
+      document.querySelectorAll(".live-fill").forEach((node) => {
+        const value = parseInt(node.style.width, 10);
+        node.dataset.base = String(value);
+        node.dataset.drift = "0";
+      });
+
+      statusLabel.textContent = "Ready pods loaded";
+      setActiveItem("");
+      updatePeriodDisplay(periods[currentPeriodIndex].id);
+      animateLiveReadings();
+    }
+
+    function showClear() {
+      stopLiveTicker();
+      output.innerHTML = `<div class="bright cursor">&gt; OUTPUT CLEARED</div>`;
+      statusLabel.textContent = "Output cleared";
+      setActiveItem("");
+      updatePeriodDisplay(periods[currentPeriodIndex].id);
+    }
+
+    function showError(message) {
+      stopLiveTicker();
+      output.innerHTML = `
+        <div class="block">
+          <div class="bright">&gt; INVALID QUERY</div><br>
+          <div class="danger">${message}</div>
+        </div>
+        <div class="danger cursor">&gt; COMMAND REJECTED</div>
+      `;
+      statusLabel.textContent = "Invalid command";
+    }
+
+    function showItem(id) {
+      if (id === "01") return renderTab1();
+      if (id === "02") return renderTab2();
+      showError(`TAB ${id} NOT FOUND`);
+    }
+
+    function runCommand(raw) {
+      const cmd = raw.trim().toLowerCase();
+      if (!cmd) {
+        showError("EMPTY COMMAND");
+        return;
+      }
+      if (cmd === "status") return showStatus();
+      if (cmd === "alerts") return showReadyPods();
+      if (cmd === "clear") return showClear();
+
+      if (cmd.startsWith("item ")) {
+        const id = cmd.replace("item ", "").padStart(2, "0");
+        return showItem(id);
+      }
+
+      showError(`UNKNOWN COMMAND :: ${raw}`);
+    }
+
+    snapshot.forEach((item) => {
+      const btn = document.createElement("button");
+      btn.className = "cell-btn";
+      btn.dataset.value = item.id;
+      btn.innerHTML = `<span class="cell-name">${item.label}</span><span class="cell-meta">${item.summary}</span>`;
+      btn.addEventListener("click", () => {
+        commandInput.value = `item ${item.id}`;
+        runCommand(`item ${item.id}`);
+      });
+      itemList.appendChild(btn);
+    });
+
+    document.querySelectorAll(".cmd-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        commandInput.value = btn.dataset.command;
+        runCommand(btn.dataset.command);
+      });
+    });
+
+    prevPeriodBtn.addEventListener("click", () => {
+      currentPeriodIndex = (currentPeriodIndex - 1 + periods.length) % periods.length;
+      const period = periods[currentPeriodIndex].id;
+      commandInput.value = `item ${period}`;
+      showItem(period);
+    });
+
+    nextPeriodBtn.addEventListener("click", () => {
+      currentPeriodIndex = (currentPeriodIndex + 1) % periods.length;
+      const period = periods[currentPeriodIndex].id;
+      commandInput.value = `item ${period}`;
+      showItem(period);
+    });
+
+    commandInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        runCommand(commandInput.value);
+      }
+    });
+
+    renderTab1();
+  </script>
+</body>
+</html>
