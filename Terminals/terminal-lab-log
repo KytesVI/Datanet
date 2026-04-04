@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bio-Synthesis Console</title>
+<style>
+  :root{
+    --bg:#080300;
+    --panel:#140700;
+    --line:#ffab4d;
+    --text:#ffab4d;
+    --text-dim:#d17a2c;
+    --text-bright:#ffd08c;
+    --danger:#ff6e3a;
+    --track:rgba(255,171,77,0.12);
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:Courier New, monospace;
+    margin:0;
+    padding:20px;
+  }
+
+  .screen{
+    max-width:1200px;
+    margin:auto;
+    border:2px solid var(--line);
+    padding:20px;
+    background:linear-gradient(180deg, rgba(28,12,2,.98), rgba(14,6,1,.99));
+  }
+
+  .title{
+    margin-bottom:14px;
+    color:var(--text-bright);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    border-bottom:1px solid rgba(255,171,77,.25);
+    padding-bottom:10px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+  }
+
+  .sidebar{
+    border:1px solid rgba(255,171,77,.2);
+    padding:12px;
+    background:rgba(18,7,0,.72);
+  }
+
+  .sidebar button{
+    width:100%;
+    margin-bottom:8px;
+    background:var(--panel);
+    color:var(--text);
+    border:1px solid rgba(255,171,77,.3);
+    padding:10px;
+    cursor:pointer;
+    text-align:left;
+    font:inherit;
+  }
+
+  .sidebar button:hover,
+  .sidebar button.active{
+    background:rgba(255,171,77,.1);
+    color:var(--text-bright);
+  }
+
+  .main{
+    border:1px solid rgba(255,171,77,.2);
+    padding:16px;
+    background:rgba(18,7,0,.72);
+  }
+
+  .cell-header{
+    color:var(--text-bright);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:16px;
+    padding-bottom:10px;
+    border-bottom:1px solid rgba(255,171,77,.2);
+  }
+
+  .block{
+    margin-bottom:20px;
+    padding-bottom:16px;
+    border-bottom:1px dashed rgba(255,171,77,.18);
+  }
+
+  .block:last-child{
+    border-bottom:none;
+    margin-bottom:0;
+    padding-bottom:0;
+  }
+
+  .name{
+    color:var(--text-bright);
+    margin-bottom:12px;
+  }
+
+  .bar-group{
+    display:grid;
+    gap:10px;
+  }
+
+  .metric{
+    display:grid;
+    grid-template-columns:190px 1fr 92px;
+    gap:12px;
+    align-items:center;
+  }
+
+  .metric-label{
+    color:var(--text-dim);
+  }
+
+  .bar{
+    height:12px;
+    border:1px solid rgba(255,171,77,.28);
+    background:var(--track);
+    position:relative;
+    overflow:hidden;
+  }
+
+  .fill{
+    height:100%;
+    background:linear-gradient(90deg, rgba(255,171,77,.45), rgba(255,208,140,.95));
+  }
+
+  .metric-value{
+    color:var(--text-bright);
+    text-align:right;
+  }
+
+  .danger{
+    color:var(--danger);
+  }
+
+  @media (max-width: 900px){
+    .grid{grid-template-columns:1fr}
+  }
+
+  @media (max-width: 680px){
+    .metric{
+      grid-template-columns:1fr;
+      gap:6px;
+    }
+
+    .metric-value{
+      text-align:left;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="screen">
+  <div class="title">Bio-Synthesis Log // Subject Processing Registry // Cycle Reference: Solaceum // UR 997</div>
+
+  <div class="grid">
+    <div class="sidebar" id="cells"></div>
+    <div class="main">
+      <div class="cell-header" id="cellHeader">CELL 01</div>
+      <div id="output"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const data = {
+  "01":[
+    {n:"Jenry — OmniNet Agent", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",62],["Hybrid Copy Status",58],["Genome Synthesis",61],["DNA Potential Index",72]]},
+    {n:"Andron — HaloSyn Agent", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",78],["Hybrid Copy Status",81],["Genome Synthesis",76],["DNA Potential Index",84]]},
+    {n:"Ping — OmniNet Informant", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",49],["Hybrid Copy Status",43],["Genome Synthesis",47],["DNA Potential Index",55]]}
+  ],
+  "02":[
+    {n:"Sath — Flarewings Agent", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",85],["Hybrid Copy Status",73],["Genome Synthesis",80],["DNA Potential Index",88]]}
+  ],
+  "03":[
+    {n:"Nyla — CGU Professor", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",91],["Hybrid Copy Status",89],["Genome Synthesis",93],["DNA Potential Index",95]]},
+    {n:"Feath — CGU Professor", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",88],["Hybrid Copy Status",86],["Genome Synthesis",90],["DNA Potential Index",92]]}
+  ],
+  "04":[
+    {n:"Vaelix Korr — Mercenary (Incoming)", bars:[["Brain Scan",0,"PENDING"],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",0]]}
+  ],
+  "05":[
+    {n:"Riley Stone — OmniNet Agent", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",74],["Hybrid Copy Status",69],["Genome Synthesis",71],["DNA Potential Index",79]]}
+  ],
+  "06":[
+    {n:"Saeris Vaelor — Informant", bars:[["Brain Scan",56,"IN PROGRESS"],["Brain Conditioning",67],["Hybrid Copy Status",63],["Genome Synthesis",66],["DNA Potential Index",83]]}
+  ],
+  "07":[
+    {n:"Gray Specimen — Unknown Origin", bars:[["Brain Scan",100,"ACTIVE LOOP"],["Brain Conditioning",99],["Hybrid Copy Status",97],["Genome Synthesis",100],["DNA Potential Index",100]]}
+  ],
+  "08":[
+    {n:"STATUS: VACANT", bars:[["Brain Scan",0],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",0]]}
+  ]
+};
+
+const cells = document.getElementById("cells");
+const output = document.getElementById("output");
+const cellHeader = document.getElementById("cellHeader");
+
+function barHtml(label, value, customValue=null){
+  const safeValue = typeof value === "number" ? Math.max(0, Math.min(100, value)) : 0;
+  const shown = customValue ?? `${safeValue}%`;
+  const dangerClass = /PENDING|ACTIVE LOOP/.test(String(shown)) ? "danger" : "";
+  return `
+    <div class="metric">
+      <div class="metric-label">${label}</div>
+      <div class="bar"><div class="fill" style="width:${safeValue}%;"></div></div>
+      <div class="metric-value ${dangerClass}">${shown}</div>
+    </div>
+  `;
+}
+
+function render(cell){
+  cellHeader.textContent = `CELL ${cell}`;
+  const entries = data[cell] || [];
+  output.innerHTML = entries.map(entry => {
+    const bars = entry.bars.map((triple) => {
+      const label = triple[0];
+      const value = triple[1];
+      const customValue = triple.length > 2 ? triple[2] : null;
+      return barHtml(label, value, customValue);
+    }).join("");
+
+    return `
+      <div class="block">
+        <div class="name">${entry.n}</div>
+        <div class="bar-group">${bars}</div>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".cell-nav").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.cell === cell);
+  });
+}
+
+Object.keys(data).forEach(cell => {
+  const btn = document.createElement("button");
+  btn.className = "cell-nav";
+  btn.dataset.cell = cell;
+  btn.textContent = `CELL ${cell}`;
+  btn.onclick = () => render(cell);
+  cells.appendChild(btn);
+});
+
+render("01");
+</script>
+</body>
+</html>
