@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Console Log</title>
+  <style>
+    :root {
+      --bg: #120700;
+      --panel: #160a01;
+      --text: #ffab4d;
+      --text-dim: #d17a2c;
+      --text-bright: #ffd08c;
+      --danger: #ff6e3a;
+      --line: rgba(255, 171, 77, 0.14);
+      --glow: rgba(255, 140, 40, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #080300;
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+    }
+
+    .screen {
+      width: min(1200px, 100%);
+      background: linear-gradient(180deg, rgba(28, 12, 2, 0.98), rgba(14, 6, 1, 0.99));
+      border: 2px solid rgba(255, 171, 77, 0.45);
+      box-shadow: 0 0 30px var(--glow), inset 0 0 0 1px rgba(255, 171, 77, 0.08);
+      padding: 18px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 171, 77, 0.04) 0px,
+        rgba(255, 171, 77, 0.04) 1px,
+        transparent 3px,
+        transparent 5px
+      );
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .topline {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-bright);
+      font-size: 0.88rem;
+    }
+
+    .log {
+      position: relative;
+      z-index: 1;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    .dim { color: var(--text-dim); }
+    .bright { color: var(--text-bright); }
+    .danger { color: var(--danger); }
+
+    .block {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .cursor::after {
+      content: "_";
+      animation: blink 1s steps(1) infinite;
+      margin-left: 4px;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 700px) {
+      .topline {
+        flex-direction: column;
+      }
+
+      .log {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <div class="topline">
+      <span>Console</span>
+      <span>Cell Transfer Registry</span>
+      <span>Solaceum, UR 997</span>
+    </div>
+
+    <div class="log">
+<div class="block"><span class="bright">&gt; CELL STATUS SNAPSHOT // SOLACEUM 08 // UR 997</span>
+
+<span class="dim">CELL 01</span> :: Jenry [OmniNet Agent] | Andron [HaloSyn Agent] | Ping [OmniNet Informant]
+<span class="dim">CELL 02</span> :: Sath [Flarewings Agent]
+<span class="dim">CELL 03</span> :: Nyla [CGU Professor] | Feath [CGU Professor]
+<span class="dim">CELL 04</span> :: Vaelix Korr [Mercenary] [Reserved Cell] [Captured Incoming]
+<span class="dim">CELL 05</span> :: Riley Stone [OmniNet Agent] [Model Agency Owner]
+<span class="dim">CELL 06</span> :: Saeris Vaelor [Informant] <span class="danger">[Currently Transferred for Brain Scan]</span>
+<span class="dim">CELL 07</span> :: Gray Specimen [Permanent Sedation Induced] <span class="danger">[Transferred for Brain Scan]</span>
+<span class="dim">CELL 08</span> :: Vacant</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 01 // UR 997</span>
+[07:12] CELL 01 &gt; EXAM ROOM :: Jenry :: BLOOD DRAW
+[07:31] EXAM ROOM &gt; CELL 01 :: Jenry :: LOCKED
+[08:05] CELL 03 &gt; EXAM ROOM :: Nyla :: BRAIN SCAN
+[08:44] EXAM ROOM &gt; CELL 03 :: Nyla :: LOCKED
+[09:10] CELL 02 &gt; EXAM ROOM :: Sath :: CONDITIONING
+[10:02] EXAM ROOM &gt; CELL 02 :: Sath :: LOCKED
+[11:26] CELL 01 &gt; EXAM ROOM :: Ping :: BLOOD DRAW
+[11:40] EXAM ROOM &gt; CELL 01 :: Ping :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 02 // UR 997</span>
+[06:58] CELL 03 &gt; EXAM ROOM :: Feath :: BLOOD DRAW
+[07:14] EXAM ROOM &gt; CELL 03 :: Feath :: LOCKED
+[08:22] CELL 05 &gt; EXAM ROOM :: Riley Stone :: BRAIN SCAN
+[09:03] EXAM ROOM &gt; CELL 05 :: Riley Stone :: LOCKED
+[10:19] CELL 01 &gt; EXAM ROOM :: Andron :: CONDITIONING
+[11:27] EXAM ROOM &gt; CELL 01 :: Andron :: LOCKED
+[12:06] CELL 02 &gt; EXAM ROOM :: Sath :: BLOOD DRAW
+[12:18] EXAM ROOM &gt; CELL 02 :: Sath :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 03 // UR 997</span>
+[07:03] CELL 06 &gt; EXAM ROOM :: Saeris Vaelor :: BLOOD DRAW
+[07:21] EXAM ROOM &gt; CELL 06 :: Saeris Vaelor :: LOCKED
+[08:11] CELL 07 &gt; EXAM ROOM :: Gray Specimen :: BRAIN SCAN
+[09:25] EXAM ROOM &gt; CELL 07 :: Gray Specimen :: LOCKED
+[10:43] CELL 03 &gt; EXAM ROOM :: Nyla :: CONDITIONING
+[11:50] EXAM ROOM &gt; CELL 03 :: Nyla :: LOCKED
+[12:33] CELL 01 &gt; EXAM ROOM :: Jenry :: BRAIN SCAN
+[13:16] EXAM ROOM &gt; CELL 01 :: Jenry :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 04 // UR 997</span>
+[06:47] CELL 05 &gt; EXAM ROOM :: Riley Stone :: CONDITIONING
+[08:04] EXAM ROOM &gt; CELL 05 :: Riley Stone :: LOCKED
+[08:39] CELL 01 &gt; EXAM ROOM :: Ping :: BRAIN SCAN
+[09:08] EXAM ROOM &gt; CELL 01 :: Ping :: LOCKED
+[10:14] CELL 03 &gt; EXAM ROOM :: Feath :: CONDITIONING
+[11:09] EXAM ROOM &gt; CELL 03 :: Feath :: LOCKED
+[11:46] CELL 02 &gt; EXAM ROOM :: Sath :: BRAIN SCAN
+[12:31] EXAM ROOM &gt; CELL 02 :: Sath :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 05 // UR 997</span>
+[07:28] CELL 01 &gt; EXAM ROOM :: Andron :: BLOOD DRAW
+[07:42] EXAM ROOM &gt; CELL 01 :: Andron :: LOCKED
+[08:17] CELL 06 &gt; EXAM ROOM :: Saeris Vaelor :: CONDITIONING
+[09:41] EXAM ROOM &gt; CELL 06 :: Saeris Vaelor :: LOCKED
+[10:26] CELL 07 &gt; EXAM ROOM :: Gray Specimen :: BRAIN SCAN
+[11:58] EXAM ROOM &gt; CELL 07 :: Gray Specimen :: LOCKED
+[12:22] CELL 03 &gt; EXAM ROOM :: Nyla :: BLOOD DRAW
+[12:36] EXAM ROOM &gt; CELL 03 :: Nyla :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 06 // UR 997</span>
+[06:53] CELL 05 &gt; EXAM ROOM :: Riley Stone :: BLOOD DRAW
+[07:10] EXAM ROOM &gt; CELL 05 :: Riley Stone :: LOCKED
+[07:54] CELL 01 &gt; EXAM ROOM :: Jenry :: CONDITIONING
+[09:12] EXAM ROOM &gt; CELL 01 :: Jenry :: LOCKED
+[10:03] CELL 03 &gt; EXAM ROOM :: Feath :: BRAIN SCAN
+[10:49] EXAM ROOM &gt; CELL 03 :: Feath :: LOCKED
+[11:35] CELL 06 &gt; EXAM ROOM :: Saeris Vaelor :: BLOOD DRAW
+[11:48] EXAM ROOM &gt; CELL 06 :: Saeris Vaelor :: LOCKED</div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 07 // UR 997</span>
+[07:09] CELL 02 &gt; EXAM ROOM :: Sath :: CONDITIONING
+[08:26] EXAM ROOM &gt; CELL 02 :: Sath :: LOCKED
+[09:02] CELL 01 &gt; EXAM ROOM :: Ping :: CONDITIONING
+[10:18] EXAM ROOM &gt; CELL 01 :: Ping :: LOCKED
+[11:07] CELL 05 &gt; EXAM ROOM :: Riley Stone :: BRAIN SCAN
+[11:51] EXAM ROOM &gt; CELL 05 :: Riley Stone :: LOCKED
+[12:40] CELL 07 &gt; EXAM ROOM :: Gray Specimen :: BRAIN SCAN
+<span class="danger">[NO RETURN ENTRY LOGGED]</span></div>
+
+<div class="block"><span class="bright">&gt; TRANSFER LOG // SOLACEUM 08 // UR 997</span>
+[06:42] CELL 06 &gt; EXAM ROOM :: Saeris Vaelor :: BRAIN SCAN
+<span class="danger">[SUBJECT CURRENTLY OFF-CELL]</span>
+[07:13] CELL 07 &gt; EXAM ROOM :: Gray Specimen :: BRAIN SCAN CONTINUATION
+<span class="danger">[PERMANENT SEDATION MAINTAINED]</span>
+[08:05] CELL 04 :: RESERVED STATUS UPDATED :: Vaelix Korr :: CAPTURED / INCOMING
+[08:19] UNKNOWN > CELL 04 :: VACANT :: LOCKED
+[08:22] UNKNOWN > CELL 08 :: VACANT :: LOCKED
+[08:31] LOG REVIEW FLAG :: MULTIPLE CONSECUTIVE NEURAL PROCEDURES DETECTED
+[08:33] REVIEW AUTHORIZATION :: ACCEPTED
+[08:34] ARCHIVE NOTE :: DO NOT EXPOSE TRANSFER PATTERN TO AUXILIARY STAFF</div>
+
+<div class="bright cursor">&gt; END OF ACCESSIBLE LOG</div>
+    </div>
+  </main>
+</body>
+</html>

@@ -32,6 +32,16 @@
       }
       #results { margin-top: 20px; }
       #toolbar { margin-top: 20px; }
+      #terminals { margin-top: 20px; }
+      #terminals h2 { margin: 0 0 8px 0; font-size: 1rem; }
+      .terminal-button {
+        background: #000;
+        color: #4b7eb3;
+        border: 1px solid #4b7eb3;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-family: monospace;
+      }
 #file-list { list-style: none; padding-left: 0; margin-top: 10px; }
 #file-list li { display: flex; align-items: center; padding: 4px 0; }
 #file-list li.category { font-weight: bold; margin-top: 10px; }
@@ -72,6 +82,10 @@
       <div id="toolbar">
         <button id="up-folder" style="display:none;">Up</button>
       </div>
+      <div id="terminals">
+        <h2>Terminals</h2>
+        <button class="terminal-button" id="terminal-1">Open Terminal 01</button>
+      </div>
       <ul id="file-list"></ul>
     </div>
     <div id="side-panel">
@@ -86,6 +100,7 @@
       const upFolderBtn = document.getElementById('up-folder');
       const sidePanel = document.getElementById('side-panel');
       const sideContent = document.getElementById('side-content');
+      const terminal1Btn = document.getElementById('terminal-1');
 
       function typeText(el, text, duration, isHTML, cb) {
         if (isHTML) {
@@ -298,6 +313,11 @@
         fileList.innerHTML = html;
       }
 
+
+
+      terminal1Btn.addEventListener('click', () => {
+        window.open('Terminals/terminal-01.html', '_blank');
+      });
 
       upFolderBtn.addEventListener('click', () => {
         if (dirStack.length === 0) return;
