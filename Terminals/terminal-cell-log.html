@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Console Log</title>
+  <style>
+    :root {
+      --bg: #120700;
+      --panel: #160a01;
+      --panel-2: #1d0c01;
+      --text: #ffab4d;
+      --text-dim: #d17a2c;
+      --text-bright: #ffd08c;
+      --danger: #ff6e3a;
+      --line: rgba(255, 171, 77, 0.14);
+      --line-strong: rgba(255, 171, 77, 0.32);
+      --glow: rgba(255, 140, 40, 0.22);
+      --active: rgba(255, 208, 140, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(255, 140, 40, 0.08), transparent 32%),
+        #080300;
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+    }
+
+    .screen {
+      width: min(1300px, 100%);
+      background: linear-gradient(180deg, rgba(28, 12, 2, 0.98), rgba(14, 6, 1, 0.99));
+      border: 2px solid rgba(255, 171, 77, 0.45);
+      box-shadow: 0 0 30px var(--glow), inset 0 0 0 1px rgba(255, 171, 77, 0.08);
+      padding: 18px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 171, 77, 0.04) 0px,
+        rgba(255, 171, 77, 0.04) 1px,
+        transparent 3px,
+        transparent 5px
+      );
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 0%, rgba(0,0,0,0.12) 50%, transparent 100%);
+      animation: scan 7s linear infinite;
+      pointer-events: none;
+      opacity: 0.28;
+    }
+
+    .topline {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-bright);
+      font-size: 0.88rem;
+    }
+
+    .console-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .sidebar, .terminal-main {
+      background: rgba(18, 7, 0, 0.72);
+      border: 1px solid var(--line);
+      min-height: 70vh;
+      position: relative;
+    }
+
+    .sidebar {
+      padding: 14px;
+    }
+
+    .terminal-main {
+      padding: 14px;
+      overflow: hidden;
+    }
+
+    .panel-title {
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.84rem;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .cell-btn, .nav-btn, .cmd-btn {
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: var(--text);
+      background: rgba(255, 171, 77, 0.03);
+      border: 1px solid transparent;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+
+    .cell-btn:hover, .nav-btn:hover, .cmd-btn:hover {
+      background: rgba(255, 171, 77, 0.08);
+      border-color: var(--line);
+    }
+
+    .cell-btn.active, .nav-btn.active, .cmd-btn.active {
+      background: var(--active);
+      border-color: var(--line-strong);
+      color: var(--text-bright);
+    }
+
+    .cell-name {
+      display: block;
+      color: var(--text-bright);
+      margin-bottom: 2px;
+    }
+
+    .cell-meta {
+      display: block;
+      font-size: 0.84rem;
+      color: var(--text-dim);
+    }
+
+    .command-bank {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .date-nav {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) 48px;
+      gap: 8px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .date-display {
+      text-align: center;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 171, 77, 0.04);
+      color: var(--text-bright);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-btn {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      color: var(--text-bright);
+    }
+
+    .prompt-input {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255, 171, 77, 0.04);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font: inherit;
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    .prompt-input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 1px rgba(255, 208, 140, 0.18);
+    }
+
+    .output {
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 0.97rem;
+      min-height: 58vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+
+    .block {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .bright { color: var(--text-bright); }
+    .danger { color: var(--danger); }
+
+    .cursor::after {
+      content: "_";
+      animation: blink 1s steps(1) infinite;
+      margin-left: 4px;
+    }
+
+    .footer-bar {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+
+    @media (max-width: 980px) {
+      .console-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar, .terminal-main {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topline {
+        flex-direction: column;
+      }
+
+      .output {
+        font-size: 0.9rem;
+      }
+
+      .prompt-line {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <div class="topline">
+      <span>Console - 286</span>
+      <span>Cell Transfer Registry</span>
+      <span>Solaceum, UR 997</span>
+    </div>
+
+    <section class="console-grid">
+      <aside class="sidebar">
+        <div class="panel-title">Cells</div>
+        <div class="status-list" id="cellList"></div>
+
+        <div class="panel-title">Preset Commands</div>
+        <div class="command-bank">
+          <button class="cmd-btn" data-command="status">Status</button>
+          <button class="cmd-btn" data-command="clear">Clear</button>
+        </div>
+      </aside>
+
+      <section class="terminal-main">
+        <div class="date-nav">
+          <button class="nav-btn" id="prevDayBtn" aria-label="Previous day">&larr;</button>
+          <div class="date-display" id="dateDisplay">Solaceum 08 // UR 997</div>
+          <button class="nav-btn" id="nextDayBtn" aria-label="Next day">&rarr;</button>
+        </div>
+
+        <div class="prompt-line">
+          <span class="bright">&gt; SYS/LOG_QUERY</span>
+          <input id="commandInput" class="prompt-input" value="day 08" aria-label="Terminal command input" />
+        </div>
+
+        <div class="output" id="output"></div>
+
+        <div class="footer-bar">
+          <span id="statusLabel">Awaiting input</span>
+          <span class="cursor">Console Ready</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const snapshot = [
+      { cell: "01", summary: "Jenry | Andron | Ping", detail: "Jenry [OmniNet Agent] | Andron [HaloSyn Agent] | Ping [OmniNet Informant]" },
+      { cell: "02", summary: "Sath", detail: "Sath [Flarewings Agent]" },
+      { cell: "03", summary: "Nyla | Feath", detail: "Nyla [CGU Professor] | Feath [CGU Professor]" },
+      { cell: "04", summary: "Vaelix Korr", detail: "Vaelix Korr [Mercenary] [Reserved Cell] [Captured Incoming]" },
+      { cell: "05", summary: "Riley Stone", detail: "Riley Stone [OmniNet Agent] [Model Agency Owner]" },
+      { cell: "06", summary: "Saeris Vaelor", detail: "Saeris Vaelor [Informant] [Currently Transferred for Brain Scan]" },
+      { cell: "07", summary: "Gray Specimen", detail: "Gray Specimen [Permanent Sedation Induced] [Transferred for Brain Scan]" },
+      { cell: "08", summary: "Vacant", detail: "Vacant" }
+    ];
+
+    const logs = {
+      "01": [
+        "[07:12] CELL 01 > EXAM ROOM :: Jenry :: BLOOD DRAW",
+        "[07:31] EXAM ROOM > CELL 01 :: Jenry :: LOCKED",
+        "[08:05] CELL 03 > EXAM ROOM :: Nyla :: BRAIN SCAN",
+        "[08:44] EXAM ROOM > CELL 03 :: Nyla :: LOCKED",
+        "[09:10] CELL 02 > EXAM ROOM :: Sath :: CONDITIONING",
+        "[10:02] EXAM ROOM > CELL 02 :: Sath :: LOCKED",
+        "[11:26] CELL 01 > EXAM ROOM :: Ping :: BLOOD DRAW",
+        "[11:40] EXAM ROOM > CELL 01 :: Ping :: LOCKED"
+      ],
+      "02": [
+        "[06:58] CELL 03 > EXAM ROOM :: Feath :: BLOOD DRAW",
+        "[07:14] EXAM ROOM > CELL 03 :: Feath :: LOCKED",
+        "[08:22] CELL 05 > EXAM ROOM :: Riley Stone :: BRAIN SCAN",
+        "[09:03] EXAM ROOM > CELL 05 :: Riley Stone :: LOCKED",
+        "[10:19] CELL 01 > EXAM ROOM :: Andron :: CONDITIONING",
+        "[11:27] EXAM ROOM > CELL 01 :: Andron :: LOCKED",
+        "[12:06] CELL 02 > EXAM ROOM :: Sath :: BLOOD DRAW",
+        "[12:18] EXAM ROOM > CELL 02 :: Sath :: LOCKED"
+      ],
+      "03": [
+        "[07:03] CELL 06 > EXAM ROOM :: Saeris Vaelor :: BLOOD DRAW",
+        "[07:21] EXAM ROOM > CELL 06 :: Saeris Vaelor :: LOCKED",
+        "[08:05] CELL 04 :: RESERVED STATUS UPDATED :: Vaelix Korr :: CAPTURED / INCOMING",
+        "[08:11] CELL 07 > EXAM ROOM :: Gray Specimen :: BRAIN SCAN",
+        "[09:25] EXAM ROOM > CELL 07 :: Gray Specimen :: LOCKED",
+        "[10:43] CELL 03 > EXAM ROOM :: Nyla :: CONDITIONING",
+        "[11:50] EXAM ROOM > CELL 03 :: Nyla :: LOCKED",
+        "[12:33] CELL 01 > EXAM ROOM :: Jenry :: BRAIN SCAN",
+        "[13:16] EXAM ROOM > CELL 01 :: Jenry :: LOCKED"
+      ],
+      "04": [
+        "[06:47] CELL 05 > EXAM ROOM :: Riley Stone :: CONDITIONING",
+        "[08:04] EXAM ROOM > CELL 05 :: Riley Stone :: LOCKED",
+        "[08:39] CELL 01 > EXAM ROOM :: Ping :: BRAIN SCAN",
+        "[09:08] EXAM ROOM > CELL 01 :: Ping :: LOCKED",
+        "[10:14] CELL 03 > EXAM ROOM :: Feath :: CONDITIONING",
+        "[11:09] EXAM ROOM > CELL 03 :: Feath :: LOCKED",
+        "[11:46] CELL 02 > EXAM ROOM :: Sath :: BRAIN SCAN",
+        "[12:31] EXAM ROOM > CELL 02 :: Sath :: LOCKED"
+      ],
+      "05": [
+        "[07:28] CELL 01 > EXAM ROOM :: Andron :: BLOOD DRAW",
+        "[07:42] EXAM ROOM > CELL 01 :: Andron :: LOCKED",
+        "[08:17] CELL 06 > EXAM ROOM :: Saeris Vaelor :: CONDITIONING",
+        "[09:41] EXAM ROOM > CELL 06 :: Saeris Vaelor :: LOCKED",
+        "[10:26] CELL 07 > EXAM ROOM :: Gray Specimen :: BRAIN SCAN",
+        "[11:58] EXAM ROOM > CELL 07 :: Gray Specimen :: LOCKED",
+        "[12:22] CELL 03 > EXAM ROOM :: Nyla :: BLOOD DRAW",
+        "[12:36] EXAM ROOM > CELL 03 :: Nyla :: LOCKED"
+      ],
+      "06": [
+        "[06:53] CELL 05 > EXAM ROOM :: Riley Stone :: BLOOD DRAW",
+        "[07:10] EXAM ROOM > CELL 05 :: Riley Stone :: LOCKED",
+        "[07:54] CELL 01 > EXAM ROOM :: Jenry :: CONDITIONING",
+        "[09:12] EXAM ROOM > CELL 01 :: Jenry :: LOCKED",
+        "[10:03] CELL 03 > EXAM ROOM :: Feath :: BRAIN SCAN",
+        "[10:49] EXAM ROOM > CELL 03 :: Feath :: LOCKED",
+        "[11:35] CELL 06 > EXAM ROOM :: Saeris Vaelor :: BLOOD DRAW",
+        "[11:48] EXAM ROOM > CELL 06 :: Saeris Vaelor :: LOCKED"
+      ],
+      "07": [
+        "[07:09] CELL 02 > EXAM ROOM :: Sath :: CONDITIONING",
+        "[08:26] EXAM ROOM > CELL 02 :: Sath :: LOCKED",
+        "[09:02] CELL 01 > EXAM ROOM :: Ping :: CONDITIONING",
+        "[10:18] EXAM ROOM > CELL 01 :: Ping :: LOCKED",
+        "[11:07] CELL 05 > EXAM ROOM :: Riley Stone :: BRAIN SCAN",
+        "[11:51] EXAM ROOM > CELL 05 :: Riley Stone :: LOCKED",
+        "[12:40] CELL 07 > EXAM ROOM :: Gray Specimen :: BRAIN SCAN",
+        "[NO RETURN ENTRY LOGGED]"
+      ],
+      "08": [
+        "[06:42] CELL 06 > EXAM ROOM :: Saeris Vaelor :: BRAIN SCAN",
+        "[SUBJECT CURRENTLY OFF-CELL]",
+        "[07:13] CELL 07 > EXAM ROOM :: Gray Specimen :: BRAIN SCAN CONTINUATION",
+        "[PERMANENT SEDATION MAINTAINED]",
+        "[08:19] UNKNOWN > CELL 04 :: VACANT :: LOCKED",
+        "[08:22] UNKNOWN > CELL 08 :: VACANT :: LOCKED",
+        "[08:31] LOG REVIEW FLAG :: MULTIPLE CONSECUTIVE NEURAL PROCEDURES DETECTED",
+        "[08:33] REVIEW AUTHORIZATION :: ACCEPTED",
+        "[08:34] ARCHIVE NOTE :: DO NOT EXPOSE TRANSFER PATTERN TO AUXILIARY STAFF"
+      ]
+    };
+
+    const days = Object.keys(logs);
+    let currentDayIndex = days.indexOf("08");
+
+    const output = document.getElementById("output");
+    const commandInput = document.getElementById("commandInput");
+    const statusLabel = document.getElementById("statusLabel");
+    const cellList = document.getElementById("cellList");
+    const dateDisplay = document.getElementById("dateDisplay");
+    const prevDayBtn = document.getElementById("prevDayBtn");
+    const nextDayBtn = document.getElementById("nextDayBtn");
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function updateDateDisplay(day) {
+      dateDisplay.textContent = `Solaceum ${day} // UR 997`;
+    }
+
+    function renderBlock(title, lines) {
+      const htmlLines = lines.map((line) => {
+        const cls = /NO RETURN|OFF-CELL|SEDATION|REVIEW FLAG|ARCHIVE NOTE/i.test(line) ? "danger" : "";
+        return `<div class="${cls}">${escapeHtml(line)}</div>`;
+      }).join("");
+      return `<div class="block"><div class="bright">${escapeHtml(title)}</div><br>${htmlLines}</div>`;
+    }
+
+    function setActiveCell(cell) {
+      document.querySelectorAll(".cell-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.value === cell);
+      });
+    }
+
+    function showStatus() {
+      const lines = snapshot.map((item) => `CELL ${item.cell} :: ${item.detail}`);
+      output.innerHTML = renderBlock("> CELL STATUS SNAPSHOT // SOLACEUM 08 // UR 997", lines) + '<div class="bright cursor">&gt; SNAPSHOT COMPLETE</div>';
+      statusLabel.textContent = "Snapshot loaded";
+      setActiveCell("");
+      updateDateDisplay(days[currentDayIndex]);
+    }
+
+    function showDay(day) {
+      const lines = logs[day];
+      if (!lines) {
+        showError(`DAY ${day} NOT FOUND`);
+        return;
+      }
+      currentDayIndex = days.indexOf(day);
+      output.innerHTML = renderBlock(`> TRANSFER LOG // SOLACEUM ${day} // UR 997`, lines) + '<div class="bright cursor">&gt; DAY LOG COMPLETE</div>';
+      statusLabel.textContent = `Displaying Solaceum ${day}`;
+      setActiveCell("");
+      updateDateDisplay(day);
+    }
+
+    function showCell(cell) {
+      const relevantDays = Object.entries(logs).flatMap(([day, lines]) => {
+        const filtered = lines.filter((line) => line.includes(`CELL ${cell}`));
+        return filtered.length ? [`-- SOLACEUM ${day} --`, ...filtered, ""] : [];
+      });
+      const snap = snapshot.find((item) => item.cell === cell);
+      if (!snap) {
+        showError(`CELL ${cell} NOT FOUND`);
+        return;
+      }
+      const lines = [`STATUS :: ${snap.detail}`, "", ...relevantDays];
+      output.innerHTML = renderBlock(`> CELL ${cell} TRACE`, lines) + '<div class="bright cursor">&gt; TRACE COMPLETE</div>';
+      statusLabel.textContent = `Tracing Cell ${cell}`;
+      setActiveCell(cell);
+    }
+
+    function showAlerts() {
+      const alertLines = [];
+      Object.entries(logs).forEach(([day, lines]) => {
+        lines.forEach((line) => {
+          if (/NO RETURN|OFF-CELL|SEDATION|REVIEW FLAG|ARCHIVE NOTE/i.test(line)) {
+            alertLines.push(`SOLACEUM ${day} :: ${line}`);
+          }
+        });
+      });
+      output.innerHTML = renderBlock("> ALERT REVIEW", alertLines) + '<div class="bright cursor">&gt; ALERT SCAN COMPLETE</div>';
+      statusLabel.textContent = "Alert review loaded";
+      setActiveCell("");
+      updateDateDisplay(days[currentDayIndex]);
+    }
+
+    function showClear() {
+      output.innerHTML = '<div class="bright cursor">&gt; OUTPUT CLEARED</div>';
+      statusLabel.textContent = "Output cleared";
+      setActiveCell("");
+      updateDateDisplay(days[currentDayIndex]);
+    }
+
+    function showError(message) {
+      output.innerHTML = renderBlock("> INVALID QUERY", [message]) + '<div class="danger cursor">&gt; COMMAND REJECTED</div>';
+      statusLabel.textContent = "Invalid command";
+    }
+
+    function runCommand(raw) {
+      const cmd = raw.trim().toLowerCase();
+      if (!cmd) {
+        showError("EMPTY COMMAND");
+        return;
+      }
+      if (cmd === "status") return showStatus();
+      if (cmd === "alerts") return showAlerts();
+      if (cmd === "clear") return showClear();
+
+      if (cmd.startsWith("day ")) {
+        const day = cmd.replace("day ", "").padStart(2, "0");
+        return showDay(day);
+      }
+
+      if (cmd.startsWith("cell ")) {
+        const cell = cmd.replace("cell ", "").padStart(2, "0");
+        return showCell(cell);
+      }
+
+      showError(`UNKNOWN COMMAND :: ${raw}`);
+    }
+
+    snapshot.forEach((item) => {
+      const btn = document.createElement("button");
+      btn.className = "cell-btn";
+      btn.dataset.value = item.cell;
+      btn.innerHTML = `<span class="cell-name">CELL ${item.cell}</span><span class="cell-meta">${item.summary}</span>`;
+      btn.addEventListener("click", () => {
+        commandInput.value = `cell ${item.cell}`;
+        runCommand(`cell ${item.cell}`);
+      });
+      cellList.appendChild(btn);
+    });
+
+    document.querySelectorAll(".cmd-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        commandInput.value = btn.dataset.command;
+        runCommand(btn.dataset.command);
+      });
+    });
+
+    prevDayBtn.addEventListener("click", () => {
+      currentDayIndex = (currentDayIndex - 1 + days.length) % days.length;
+      const day = days[currentDayIndex];
+      commandInput.value = `day ${day}`;
+      showDay(day);
+    });
+
+    nextDayBtn.addEventListener("click", () => {
+      currentDayIndex = (currentDayIndex + 1) % days.length;
+      const day = days[currentDayIndex];
+      commandInput.value = `day ${day}`;
+      showDay(day);
+    });
+
+    commandInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        runCommand(commandInput.value);
+      }
+    });
+
+    showDay("08");
+  </script>
+</body>
+</html>
