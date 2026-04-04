@@ -186,7 +186,7 @@ const data = {
     {n:"Feath — CGU Professor", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",88],["Hybrid Copy Status",86],["Genome Synthesis",90],["DNA Potential Index",92]]}
   ],
   "04":[
-    {n:"Vaelix Korr — Mercenary (Incoming)", bars:[["Brain Scan",0,"PENDING"],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",0]]}
+    {n:"Vaelix Korr — Mercenary (Incoming)", bars:[["Brain Scan",0,"PENDING"],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",null,"UNKNOWN"]]}
   ],
   "05":[
     {n:"Riley Stone — OmniNet Agent", bars:[["Brain Scan",100,"COMPLETE"],["Brain Conditioning",74],["Hybrid Copy Status",69],["Genome Synthesis",71],["DNA Potential Index",79]]}
@@ -197,8 +197,8 @@ const data = {
   "07":[
     {n:"Gray Specimen — Unknown Origin", bars:[["Brain Scan",100,"ACTIVE LOOP"],["Brain Conditioning",99],["Hybrid Copy Status",97],["Genome Synthesis",100],["DNA Potential Index",100]]}
   ],
-  "08":[
-    {n:"STATUS: VACANT", bars:[["Brain Scan",0],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",0]]}
+    "08":[
+    {n:"STATUS: VACANT", bars:[["Brain Scan",100,"ACTIVE LOOP"],["Brain Conditioning",0],["Hybrid Copy Status",0],["Genome Synthesis",0],["DNA Potential Index",0]]}
   ]
 };
 
@@ -208,7 +208,7 @@ const cellHeader = document.getElementById("cellHeader");
 
 function barHtml(label, value, customValue=null){
   const safeValue = typeof value === "number" ? Math.max(0, Math.min(100, value)) : 0;
-  const shown = customValue ?? `${safeValue}%`;
+  const shown = customValue ?? (value === null ? "UNKNOWN" : `${safeValue}%`);
   const dangerClass = /PENDING|ACTIVE LOOP/.test(String(shown)) ? "danger" : "";
   return `
     <div class="metric">
